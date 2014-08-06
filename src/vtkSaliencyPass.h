@@ -91,12 +91,8 @@ private:
   void init();
 
   TextureInfo* texRender;
-  TextureInfo* texConspicuityMaps;
+  TextureInfo* texShaded;
 
-  TextureInfo* texFeatureMaps;
-  TextureInfo* texShowMask;
-  TextureInfo* texShowConspicuity;
-  TextureInfo* texShowSaliency;
   TextureInfo* texFinal;
   float* weightsBuffer;
   float* saliencyValuesBuffer;

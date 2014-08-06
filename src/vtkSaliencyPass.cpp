@@ -89,35 +89,12 @@ void vtkSaliencyPass::init()
 
   createAuxiliaryTexture(texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
 
-  createAuxiliaryTexture(texConspicuityMaps, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
-  texConspicuityMaps->shader= shaderManager.loadfromFile(0, const_cast<char*>("2_ConspicuityMaps.glsl"));
-  texConspicuityMaps->input[0]= glGetUniformLocationARB(texConspicuityMaps->shader->GetProgramObject(),"input0");
-
-  createAuxiliaryTexture(texFeatureMaps, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
-  texFeatureMaps->shader = shaderManager.loadfromFile(0, const_cast<char*>("1_FeatureMaps.glsl"));
-  texFeatureMaps->input[0] = glGetUniformLocationARB(texFeatureMaps->shader->GetProgramObject(),"input0");
-
-
-  createAuxiliaryTexture(texShowMask, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
-  texShowMask->shader= shaderManager.loadfromFile(0, const_cast<char*>("7_ShowMask.glsl"));
-  texShowMask->input[0]= glGetUniformLocationARB(texShowMask->shader->GetProgramObject(),"input0");
-  texShowMask->input[1]= glGetUniformLocationARB(texShowMask->shader->GetProgramObject(),"level");
-
-  createAuxiliaryTexture(texShowSaliency, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
-  texShowSaliency->shader= shaderManager.loadfromFile(0, const_cast<char*>("8_ShowSaliency.glsl"));
-  texShowSaliency->input[0]= glGetUniformLocationARB(texShowSaliency->shader->GetProgramObject(),"input0");
-  texShowSaliency->input[1]= glGetUniformLocationARB(texShowSaliency->shader->GetProgramObject(),"weights");
-
-  createAuxiliaryTexture(texShowConspicuity, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
-  texShowConspicuity->shader= shaderManager.loadfromFile(0, const_cast<char*>("9_ShowConspicuity.glsl"));
-  texShowConspicuity->input[0]= glGetUniformLocationARB(texShowSaliency->shader->GetProgramObject(),"input0");
-  texShowConspicuity->input[1]= glGetUniformLocationARB(texShowSaliency->shader->GetProgramObject(),"normalizeby");
-
-  createAuxiliaryTexture(texFinal, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
-  texFinal->shader= shaderManager.loadfromFile(0, const_cast<char*>("6_Output.glsl"));
-  texFinal->input[0]= glGetUniformLocationARB(texFinal->shader->GetProgramObject(),"input0");
-  saliencyValuesBuffer = (float *)malloc(640*sizeof(float));
-
+  createAuxiliaryTexture(texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
+  char vert[] = "Distortion.vs";
+  char frag[] = "Distortion.fs";
+  texShaded->shader= shaderManager.loadfromFile(vert, frag);
+  if (0 == texShaded->shader) 
+      std::cout << "Error Loading, compiling or linking shader\n";
 
   FramebufferObject::Disable();
 
@@ -161,14 +138,11 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
     m_width = w;
     init();
 
-    TextureInfo *jokerTexture;
-
     if(w != m_old_width && h != m_old_height )
     {
-      createAuxiliaryTexture(texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO, true  );
-      createAuxiliaryTexture(texConspicuityMaps, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO, true  );
-      createAuxiliaryTexture(texFeatureMaps, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO, true  );
-      createAuxiliaryTexture(texShowSaliency, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO, true  );
+	createAuxiliaryTexture(texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
+
+	createAuxiliaryTexture(texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO, true  );
       FramebufferObject::Disable();
       m_old_width = w;
       m_old_height = h;
@@ -190,7 +164,7 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
     this->DelegatePass->Render(s);
     this->NumberOfRenderedProps+=this->DelegatePass->GetNumberOfRenderedProps();
 
-    jokerTexture = texRender;
+//    jokerTexture = texRender;
 
     glDisable(GL_DEPTH_TEST);
     //glDisable(GL_BLEND);
@@ -213,79 +187,23 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
     glLoadIdentity();
 
     //////////////////////////
-    ///////////// Computer Feature Maps
+    ///////////// texShaded
     //////////////////////////
-    texFeatureMaps->shader->begin();
-    texFeatureMaps->fbo->Bind();
+    texShaded->shader->begin();
+    texShaded->fbo->Bind();
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,  texRender->id);
-    glUniform1iARB(texFeatureMaps->input[0], 0);
+    glUniform1iARB(texShaded->input[0], 0);
     texRender->drawQuad();
     glBindTexture(GL_TEXTURE_2D, 0);
-    texFeatureMaps->shader->end();
+    texShaded->shader->end();
     ///////////////////////    
 
-
-    //////////////////////////
-    /////////// Compute Conspicuity Maps
-    //////////////////////////
-    texConspicuityMaps->shader->begin();
-    texConspicuityMaps->fbo->Bind();
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D,  texFeatureMaps->id);
-    glGenerateMipmapEXT(GL_TEXTURE_2D);
-    glUniform1iARB(texConspicuityMaps->input[0], 0);
-    texRender->drawQuad();
-    glBindTexture(GL_TEXTURE_2D, 0);
-    texConspicuityMaps->shader->end();
-    jokerTexture=texConspicuityMaps;
-    /////////////////////    
-
-    if(true) //haha -> every second. it's fast enough on CPU if you have a good one.
-    {
-      float* tmp = new float[w*h*3];
-      glBindTexture(GL_TEXTURE_2D, texConspicuityMaps->id);
-      glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, tmp);
-      glBindTexture(GL_TEXTURE_2D, 0);    
-      CheckErrorsGL("texConspicuityMaps");
-      //TODO: Cuda
-      float r = 0.0f;
-      float g = 0.0f;
-      float b = 0.0f;
-      for(int i = 0; i < w*h; i+=3)
-      {
-        if(r < abs(tmp[i])) r = abs(tmp[i]);
-        if(g < abs(tmp[i+1])) g = abs(tmp[i+1]);
-        if(b < abs(tmp[i+2])) b = abs(tmp[i+2]);
-      }
-      actualWeights[0]=r;
-      actualWeights[1]=g;
-      actualWeights[2]=b;
-      //printf("calcing weights %f %f %f\n", r,g,b);
-      delete tmp;
-    }
-
-    //////////////////////////
-    ///////////// Display Saliency
-    //////////////////////////
-#if 1
-    texShowSaliency->shader->begin();
-    texShowSaliency->fbo->Bind();
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D,  texConspicuityMaps->id);
-    glUniform1iARB(texShowSaliency->input[0], 0);
-    glUniform3fARB(texShowSaliency->input[1], 1.0f/actualWeights[0], 1.0f/actualWeights[1], 1.0f/actualWeights[2]);
-    texRender->drawQuad();
-    glBindTexture(GL_TEXTURE_2D, 0);
-    texShowSaliency->shader->end();
-    jokerTexture=texShowSaliency;
-#endif
-    /////////////////////   
 
   //////render
   FramebufferObject::Disable();
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D,  jokerTexture->id);
+  glBindTexture(GL_TEXTURE_2D,  texShaded->id);
   texRender->drawQuad();
   glBindTexture(GL_TEXTURE_2D, 0);
 
