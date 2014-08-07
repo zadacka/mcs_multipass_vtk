@@ -19,6 +19,10 @@
 #include "vtkOpaquePass.h"
 #include "vtkRenderPassCollection.h"
 #include "vtkVolumetricPass.h"
+#include "vtkDefaultPass.h"
+#include "vtkLightsPass.h"
+#include "vtkClearZPass.h"
+
 
 
 
@@ -42,49 +46,35 @@ int main()
     // render window
     vtkSmartPointer<vtkRenderWindow> renWin = vtkRenderWindow::New();
     renWin->AddRenderer( ren );
-//    renWin->SetOffScreenRendering(1);
-    
-    // const char* frag = "void propFuncFS(void){ gl_FragColor = vec4(255,0,0,1);}";
-
-    // vtkSmartPointer<vtkShaderProgram2> pgm = vtkShaderProgram2::New();
-    // pgm->SetContext(renWin);
-    
-    // vtkSmartPointer<vtkShader2> shader=vtkShader2::New();
-    // shader->SetType(VTK_SHADER_TYPE_FRAGMENT);
-    // shader->SetSourceCode(frag);
-    // shader->SetContext(pgm->GetContext());
-    
-    // pgm->GetShaders()->AddItem(shader);
-  
-    // vtkSmartPointer<vtkOpenGLProperty> openGLproperty = 
-    // 	static_cast<vtkOpenGLProperty*>(coneActor->GetProperty());
-    // openGLproperty->SetPropProgram(pgm);
-    // openGLproperty->ShadingOn();
+    renWin->SetSize(1280, 800);
 
 
-//    Multipass Render
-    vtkOpaquePass *opaque=vtkOpaquePass::New();
-    vtkVolumetricPass *volume=vtkVolumetricPass::New();
+    // Multipass Render
+    // ////////////////////////
+    // vtkOpaquePass *opaque=vtkOpaquePass::New();
+    // vtkVolumetricPass *volume=vtkVolumetricPass::New();
+    // vtkClearZPass* clearz=vtkClearZPass::New();
+    vtkDefaultPass* defal=vtkDefaultPass::New();
+    vtkLightsPass* lights=vtkLightsPass::New();
 
-    vtkRenderPassCollection *passes=vtkRenderPassCollection::New();
-    passes->AddItem(opaque);
-    passes->AddItem(volume);
+  vtkRenderPassCollection *passes=vtkRenderPassCollection::New();
+//  passes->AddItem(opaque);
+//  passes->AddItem(volume);
+  passes->AddItem(defal);
+  passes->AddItem(lights);
 
-    vtkSequencePass *seq=vtkSequencePass::New();
-    seq->SetPasses(passes);
+  vtkSequencePass *seq=vtkSequencePass::New();
+  seq->SetPasses(passes);
 
-    vtkCameraPass *cameraP=vtkCameraPass::New();
-    cameraP->SetDelegatePass(seq);
+  vtkCameraPass *cameraP=vtkCameraPass::New();
+  cameraP->SetDelegatePass(seq);
 
-    vtkSaliencyPass* saliencyP = vtkSaliencyPass::New();
-    saliencyP->SetDelegatePass(cameraP);
+  vtkSaliencyPass* saliencyP = vtkSaliencyPass::New();
+  saliencyP->SetDelegatePass(cameraP);
 
-    //seq->Render();
-    ren->SetPass(saliencyP);
+  ren->SetPass(saliencyP);
 
-    int i;
-    for (i = 0; i < 360; ++i)
-    {
+  for (int i = 0; i < 360; ++i){
     	renWin->Render();
     	ren->GetActiveCamera()->Azimuth( 1 );
     }
