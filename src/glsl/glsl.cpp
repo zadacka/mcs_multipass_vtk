@@ -1478,18 +1478,35 @@ GLint compiled = 0;
   if (ShaderSource==0) return false;
 
   GLint	length = (GLint) strlen((const char*)ShaderSource);
-  glShaderSourceARB(ShaderObject, 1, (const GLcharARB **)&ShaderSource, &length);
+//  glShaderSourceARB(ShaderObject, 1, (const GLcharARB **)&ShaderSource, &length);
+  glShaderSource(ShaderObject, 1, (const GLcharARB **)&ShaderSource, &length);
   CHECK_GL_ERROR();
 
-  glCompileShaderARB(ShaderObject); 
-  CHECK_GL_ERROR();
-  glGetObjectParameterivARB(ShaderObject, GL_COMPILE_STATUS, &compiled);
+//  glCompileShaderARB(ShaderObject); 
+  glCompileShader(ShaderObject); 
   CHECK_GL_ERROR();
 
+//  glGetObjectParameterivARB(ShaderObject, GL_COMPILE_STATUS, &compiled);
+  glGetShaderiv(ShaderObject, GL_COMPILE_STATUS, &compiled);
+  CHECK_GL_ERROR();
+
+  // Diagnostics ........................................
+  GLint logLength;
+  glGetShaderiv(ShaderObject, GL_INFO_LOG_LENGTH , &logLength);
+  if (logLength > 1)
+  {
+      GLchar* compiler_log = (GLchar*)malloc(logLength);
+      glGetShaderInfoLog(ShaderObject, logLength, 0, compiler_log);
+      printf("%s\n", compiler_log);
+      free (compiler_log);  
+  }
+  // ...................................................
+  
   if (compiled) is_compiled=true;
  
 return is_compiled;
 }
+
 
 // ----------------------------------------------------------------------------
 GLint glShaderObject::getAttribLocation(char* attribName)
@@ -1503,7 +1520,8 @@ aVertexShader::aVertexShader()
   program_type = 1; 
    if (useGLSL)
    {
-       ShaderObject = glCreateShaderObjectARB(GL_VERTEX_SHADER);
+//       ShaderObject = glCreateShaderObjectARB(GL_VERTEX_SHADER);
+       ShaderObject = glCreateShader(GL_VERTEX_SHADER);
        CHECK_GL_ERROR();
    }
 }
@@ -1519,7 +1537,8 @@ aFragmentShader::aFragmentShader()
     program_type = 2;
     if (useGLSL)
     {
-        ShaderObject = glCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB); 
+//        ShaderObject = glCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB); 
+        ShaderObject = glCreateShader(GL_FRAGMENT_SHADER); 
         CHECK_GL_ERROR();
     }
 }
