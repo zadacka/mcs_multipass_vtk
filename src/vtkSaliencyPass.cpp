@@ -67,10 +67,7 @@ vtkSaliencyPass::vtkSaliencyPass()
 }
 
 // ----------------------------------------------------------------------------
-vtkSaliencyPass::~vtkSaliencyPass()
-{
-
-}
+vtkSaliencyPass::~vtkSaliencyPass(){}
 
 // ----------------------------------------------------------------------------
 void vtkSaliencyPass::init()
@@ -88,14 +85,21 @@ void vtkSaliencyPass::init()
   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
   createAuxiliaryTexture(texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
-
   createAuxiliaryTexture(texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
-  char vert[] = "Distortion.vs";
-  char frag[] = "Distortion.fs";
-  texShaded->shader= shaderManager.loadfromFile(vert, frag);
-  if (0 == texShaded->shader) 
-      std::cout << "Error Loading, compiling or linking shader\n";
+  texShaded->input[0]= glGetUniformLocationARB(texShaded->shader->GetProgramObject(),"Texture0");
 
+//  char vert[] = "simple.vs";//"Distortion.vs";
+//  char frag[] = "simple.fs";//"Distortion.fs";
+  texShaded->shader= shaderManager.loadfromFile("Distortion.vs", "Distortion.fs");
+  //texShaded->shader= shaderManager.loadfromFile("simple.vs", "simple.fs");
+  //texShaded->shader= shaderManager.loadfromMemory(0, "void main(void){ gl_FragColor = vec4(1,0,0,1);}");
+  
+if (0 == texShaded->shader){
+    std::cout << glGetString(GL_VERSION) << std::endl;
+      std::cout << "Error Loading, compiling or linking shader" << std::endl;
+      std::cout << "and that you're RUNNING in the right dir" << std::endl;
+      exit(1);
+  }
   FramebufferObject::Disable();
 
   this->isInit = true;
@@ -120,8 +124,11 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
   this->NumberOfRenderedProps=0;
 
   vtkRenderer *r=s->GetRenderer();
-  r->GetTiledSizeAndOrigin(&this->ViewportWidth,&this->ViewportHeight,
-    &this->ViewportX,&this->ViewportY);
+  r->GetTiledSizeAndOrigin(
+      &this->ViewportWidth,
+      &this->ViewportHeight,
+      &this->ViewportX,
+      &this->ViewportY);
 
   if(this->DelegatePass!=0)
   {
@@ -141,8 +148,8 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
     if(w != m_old_width && h != m_old_height )
     {
 	createAuxiliaryTexture(texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
-
-	createAuxiliaryTexture(texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO, true  );
+	createAuxiliaryTexture(texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO, true);
+	texShaded->input[0]= glGetUniformLocationARB(texShaded->shader->GetProgramObject(),"Texture0");
       FramebufferObject::Disable();
       m_old_width = w;
       m_old_height = h;
@@ -163,14 +170,16 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
     glEnable(GL_DEPTH_TEST);
     this->DelegatePass->Render(s);
     this->NumberOfRenderedProps+=this->DelegatePass->GetNumberOfRenderedProps();
-
-//    jokerTexture = texRender;
+    // AZ: texRender should now contain scene as per VTK pipieline
 
     glDisable(GL_DEPTH_TEST);
     //glDisable(GL_BLEND);
     //glDepthMask(GL_FALSE);
     //glDisable(GL_CULL_FACE);
-    glEnable(GL_TEXTURE_2D);
+
+    glEnable(GL_TEXTURE_2D); // THIS IS DEPRECATED in 4.0???
+    // shouldn't be needed since it is overriden by shader
+
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
     glPushMatrix();
@@ -186,25 +195,38 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    //////////////////////////
-    ///////////// texShaded
-    //////////////////////////
-    texShaded->shader->begin();
-    texShaded->fbo->Bind();
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D,  texRender->id);
-    glUniform1iARB(texShaded->input[0], 0);
-    texRender->drawQuad();
-    glBindTexture(GL_TEXTURE_2D, 0);
-    texShaded->shader->end();
+//  FramebufferObject::Disable();
+//     //////////////////////////
+//     /////////////
+//     //////////////////////////
+// texShaded->fbo->Bind();
+// texShaded->shader->begin();
+// glActiveTexture(GL_TEXTURE0);
+// glBindTexture(GL_TEXTURE_2D,  texRender->id);
+// texRender->drawQuad(); 
+// glBindTexture(GL_TEXTURE_2D, 0);
+// texShaded->shader->end();
+
+    // texShaded->shader->begin();
+    // texShaded->fbo->Bind();                        // set render output
+    // //glActiveTexture(GL_TEXTURE0);                  // ????
+    // //glBindTexture(GL_TEXTURE_2D,  texRender->id);  // sets INPUT texture
+    // //glUniform1iARB(texShaded->input[0], 0);        // ????
+    // texShaded->drawQuad();                         // why texRenderer??
+    // glBindTexture(GL_TEXTURE_2D, 0);
+    // // gets the default texture object
+    // texShaded->shader->end();
     ///////////////////////    
 
 
   //////render
   FramebufferObject::Disable();
+  texShaded->shader->begin();
+  
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D,  texShaded->id);
-  texRender->drawQuad();
+  glBindTexture(GL_TEXTURE_2D,  texRender->id);
+  glUniform1iARB(texShaded->input[0], 0);        // ????
+  texShaded->drawQuad();
   glBindTexture(GL_TEXTURE_2D, 0);
 
   glEnable(GL_DEPTH_TEST);
@@ -215,7 +237,7 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
   glPopMatrix();
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
-
+  texShaded->shader->end();
 }
   else
   {
@@ -255,24 +277,16 @@ void vtkSaliencyPass::createAuxiliaryTexture(TextureInfo *&texCurrent, unsigned 
 
   // glActiveTexture(GL_TEXTURE0 + 1);
 
-  if (flags&ONE_DIMENSIONAL)
-  {
-    texCurrent->imgWidth = 1;
-    texCurrent->imgHeight = 1;
-    texCurrent->texWidth = 1;
-    texCurrent->texHeight = 1;
-  }
-  else
-  {
-    texCurrent->imgWidth = m_width;
-    texCurrent->imgHeight = m_height;
-    texCurrent->texWidth = m_width;
-    texCurrent->texHeight = m_height;
-  }
+  texCurrent->imgWidth = m_width;
+  texCurrent->imgHeight = m_height;
+  texCurrent->texWidth = m_width;
+  texCurrent->texHeight = m_height;
+
   texCurrent->format = GL_RGB;
   texCurrent->internalFormat = GL_RGB32F_ARB;
   texCurrent->u0 = (0);
   texCurrent->u1 = (texCurrent->imgWidth / (float)texCurrent->texWidth);
+
   if (flags&FLIP_Y)
   {
     texCurrent->v1 = (texCurrent->imgHeight / (float)texCurrent->texHeight);
