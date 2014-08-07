@@ -53,4 +53,6 @@ message(STATUS "Glew library: " ${GLEW_LIBRARY})
 
 configure_file(../resources/Distortion.fs Distortion.fs COPYONLY)
 configure_file(../resources/Distortion.vs Distortion.vs COPYONLY)
+configure_file(../resources/simple.fs simple.fs COPYONLY)
+configure_file(../resources/simple.vs simple.vs COPYONLY)
 

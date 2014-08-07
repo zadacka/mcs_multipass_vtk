@@ -1,10 +1,22 @@
-void main(void)
+#version 330 compatibility
+
+out vData
 {
-   vec4 a = gl_Vertex;
-   a.x = a.x * 0.5;
-   a.y = a.y * 0.5;
+    vec3 normal;
+    vec4 color;
+}vertex;
 
+void main()
+{
+    vertex.normal = normalize(gl_NormalMatrix * gl_Normal);
+    vertex.color = gl_Color;
+    gl_Position = ftransform();
+}
 
-   gl_Position = gl_ModelViewProjectionMatrix * a;
+//#version 330
+//void main()
+//{
+//    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+//    texture_coordinate = gl_MultiTexCoord0.xy;
+//}
 
-}   
