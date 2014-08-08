@@ -1,22 +1,11 @@
-#version 330 compatibility
+// PASSTHROUGH
+//////////////
 
-out vData
-{
-    vec3 normal;
-    vec4 color;
-}vertex;
+#version 440
+layout(location = 0) in vec3 vertex;
+uniform mat4 modelview;
+uniform mat4 projection;
 
-void main()
-{
-    vertex.normal = normalize(gl_NormalMatrix * gl_Normal);
-    vertex.color = gl_Color;
-    gl_Position = ftransform();
+void main(){
+     gl_Position = vec4(vertex, 1); //projection * modelview * vec4(vertex, 1.0);
 }
-
-//#version 330
-//void main()
-//{
-//    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-//    texture_coordinate = gl_MultiTexCoord0.xy;
-//}
-
