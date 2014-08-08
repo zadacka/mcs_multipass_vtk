@@ -87,9 +87,12 @@ void vtkSaliencyPass::init()
   createAuxiliaryTexture(texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
   createAuxiliaryTexture(texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
   texShaded->input[0]= glGetUniformLocationARB(texShaded->shader->GetProgramObject(),"Texture0");
+  texShaded->input[1]= glGetUniformLocationARB(texShaded->shader->GetProgramObject(),"modelview");
+  texShaded->input[2]= glGetUniformLocationARB(texShaded->shader->GetProgramObject(),"projection");
 
 //  char vert[] = "simple.vs";//"Distortion.vs";
 //  char frag[] = "simple.fs";//"Distortion.fs";
+//  texShaded->shader= shaderManager.loadfromFile("Distortion.vs", "Distortion.fs");
   texShaded->shader= shaderManager.loadfromFile("Distortion.vs", "Distortion.fs");
   //texShaded->shader= shaderManager.loadfromFile("simple.vs", "simple.fs");
   //texShaded->shader= shaderManager.loadfromMemory(0, "void main(void){ gl_FragColor = vec4(1,0,0,1);}");
@@ -150,6 +153,8 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 	createAuxiliaryTexture(texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
 	createAuxiliaryTexture(texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO, true);
 	texShaded->input[0]= glGetUniformLocationARB(texShaded->shader->GetProgramObject(),"Texture0");
+	texShaded->input[1]= glGetUniformLocationARB(texShaded->shader->GetProgramObject(),"modelview");
+	texShaded->input[2]= glGetUniformLocationARB(texShaded->shader->GetProgramObject(),"projectionview");
       FramebufferObject::Disable();
       m_old_width = w;
       m_old_height = h;
@@ -187,6 +192,8 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
     glPushMatrix();
     glLoadIdentity();
     glOrtho(0, w, 0, h, 0, -2); 
+
+
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
@@ -221,11 +228,43 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 
   //////render
   FramebufferObject::Disable();
-  texShaded->shader->begin();
+
+
+//  texShaded->shader->begin();
+  
+  float projection[16];
+  float modelview[16];
+
+  //m_ProjectionUniform = glGetUniformLocation(texShaded->shader->GetProgramObject, "projection");
+  glGetFloatv(GL_PROJECTION_MATRIX, projection); 
+  glGetFloatv(GL_MODELVIEW_MATRIX, modelview); 
+
+  //let's me access modelviewmatrix within shader
   
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D,  texRender->id);
+
+  glUniformMatrix4fv(texShaded->input[1], sizeof(modelview), GL_FALSE, &modelview[0]);
+  glUniformMatrix4fv(texShaded->input[2], sizeof(projection), GL_FALSE, &projection[0]);
+
+  std::cout << std::endl;
+  std::cout << "projection matrix: ";
+  for(int i = 0; i != 16; i++){
+      if(0 == (i%4) ) std::cout << std::endl;
+      std::cout <<projection[i] << " ";
+  }
+
+  std::cout << std::endl;  
+  std::cout << std::endl;
+  std::cout << "modelview matrix: ";
+      for(int i = 0; i != 16; i++){
+	  if(0 == (i%4) ) std::cout << std::endl;
+	  std::cout << modelview[i] << " ";
+  }
+
   glUniform1iARB(texShaded->input[0], 0);        // ????
+//  glUniform4fv(texShaded->input[1], modelview);
+//  glUniform4fv(texShaded->input[2], projection); 
   texShaded->drawQuad();
   glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -238,6 +277,7 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
   glMatrixMode(GL_MODELVIEW);
   glPopMatrix();
   texShaded->shader->end();
+
 }
   else
   {
