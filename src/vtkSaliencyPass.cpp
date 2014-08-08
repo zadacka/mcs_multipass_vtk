@@ -216,12 +216,12 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
   glUniformMatrix4fv(texShaded->input[2], sizeof(projection), GL_FALSE, &projection[0]);
 
 //  Check what OpenGL matrices are being given to the shaders...
-  std::cout << std::endl;
-  std::cout << "projection matrix: ";
-  for(int i = 0; i != 16; i++){
-      if(0 == (i%4) ) std::cout << std::endl;
-      std::cout <<projection[i] << " ";
-  }
+  // std::cout << std::endl;
+  // std::cout << "projection matrix: ";
+  // for(int i = 0; i != 16; i++){
+  //     if(0 == (i%4) ) std::cout << std::endl;
+  //     std::cout <<projection[i] << " ";
+  // }
 
 
   glUniform1iARB(texShaded->input[0], 0);        // ????
