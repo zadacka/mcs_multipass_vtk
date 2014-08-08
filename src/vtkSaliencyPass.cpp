@@ -90,9 +90,6 @@ void vtkSaliencyPass::init()
   texShaded->input[1]= glGetUniformLocationARB(texShaded->shader->GetProgramObject(),"modelview");
   texShaded->input[2]= glGetUniformLocationARB(texShaded->shader->GetProgramObject(),"projection");
 
-//  char vert[] = "simple.vs";//"Distortion.vs";
-//  char frag[] = "simple.fs";//"Distortion.fs";
-//  texShaded->shader= shaderManager.loadfromFile("Distortion.vs", "Distortion.fs");
   texShaded->shader= shaderManager.loadfromFile("Distortion.vs", "Distortion.fs");
   //texShaded->shader= shaderManager.loadfromFile("simple.vs", "simple.fs");
   //texShaded->shader= shaderManager.loadfromMemory(0, "void main(void){ gl_FragColor = vec4(1,0,0,1);}");
@@ -178,10 +175,6 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
     // AZ: texRender should now contain scene as per VTK pipieline
 
     glDisable(GL_DEPTH_TEST);
-    //glDisable(GL_BLEND);
-    //glDepthMask(GL_FALSE);
-    //glDisable(GL_CULL_FACE);
-
     glEnable(GL_TEXTURE_2D); // THIS IS DEPRECATED in 4.0???
     // shouldn't be needed since it is overriden by shader
 
@@ -202,40 +195,15 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-//  FramebufferObject::Disable();
-//     //////////////////////////
-//     /////////////
-//     //////////////////////////
-// texShaded->fbo->Bind();
-// texShaded->shader->begin();
-// glActiveTexture(GL_TEXTURE0);
-// glBindTexture(GL_TEXTURE_2D,  texRender->id);
-// texRender->drawQuad(); 
-// glBindTexture(GL_TEXTURE_2D, 0);
-// texShaded->shader->end();
-
-    // texShaded->shader->begin();
-    // texShaded->fbo->Bind();                        // set render output
-    // //glActiveTexture(GL_TEXTURE0);                  // ????
-    // //glBindTexture(GL_TEXTURE_2D,  texRender->id);  // sets INPUT texture
-    // //glUniform1iARB(texShaded->input[0], 0);        // ????
-    // texShaded->drawQuad();                         // why texRenderer??
-    // glBindTexture(GL_TEXTURE_2D, 0);
-    // // gets the default texture object
-    // texShaded->shader->end();
-    ///////////////////////    
-
-
   //////render
   FramebufferObject::Disable();
 
 
-//  texShaded->shader->begin();
+  texShaded->shader->begin();
   
   float projection[16];
   float modelview[16];
 
-  //m_ProjectionUniform = glGetUniformLocation(texShaded->shader->GetProgramObject, "projection");
   glGetFloatv(GL_PROJECTION_MATRIX, projection); 
   glGetFloatv(GL_MODELVIEW_MATRIX, modelview); 
 
@@ -247,6 +215,7 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
   glUniformMatrix4fv(texShaded->input[1], sizeof(modelview), GL_FALSE, &modelview[0]);
   glUniformMatrix4fv(texShaded->input[2], sizeof(projection), GL_FALSE, &projection[0]);
 
+//  Check what OpenGL matrices are being given to the shaders...
   std::cout << std::endl;
   std::cout << "projection matrix: ";
   for(int i = 0; i != 16; i++){
@@ -254,24 +223,12 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
       std::cout <<projection[i] << " ";
   }
 
-  std::cout << std::endl;  
-  std::cout << std::endl;
-  std::cout << "modelview matrix: ";
-      for(int i = 0; i != 16; i++){
-	  if(0 == (i%4) ) std::cout << std::endl;
-	  std::cout << modelview[i] << " ";
-  }
 
   glUniform1iARB(texShaded->input[0], 0);        // ????
-//  glUniform4fv(texShaded->input[1], modelview);
-//  glUniform4fv(texShaded->input[2], projection); 
   texShaded->drawQuad();
   glBindTexture(GL_TEXTURE_2D, 0);
 
   glEnable(GL_DEPTH_TEST);
-  //	glDepthMask(GL_TRUE);
-  //	glEnable(GL_CULL_FACE);
-  //	glDisable(GL_TEXTURE_2D);
   glMatrixMode(GL_PROJECTION);
   glPopMatrix();
   glMatrixMode(GL_MODELVIEW);
