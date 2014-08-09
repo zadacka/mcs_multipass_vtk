@@ -176,8 +176,8 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
     s->GetWindowSize(size);
     width=size[0];
     height=size[1];
-    int w=width;
-    int h=height;
+    int w = width;
+    int h = height;
     m_height = h;
     m_width = w;
     init();
@@ -189,10 +189,12 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 	texShaded->input[0]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"Texture0");
 	texShaded->input[1]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"modelview");
 	texShaded->input[2]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"projection");
-	// TODO: code re-use 	// check that uniform locations were set
+
+	// check that uniform locations are *still* okay (caught a bug with this)
 	for(int i = 0; i != 3; i++){
 	    if(-1 == texShaded->input[i]){
-		std::cout << "Failed (SCALING) to set get uniform location for input[" << i << "]. "<< std::endl;
+		std::cout << "Failed (TAKE 2) to set get uniform location for input[" 
+			  << i << "]. "<< std::endl;
 		exit(1);
 	    }
 	}
@@ -241,25 +243,22 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
   glBindTexture(GL_TEXTURE_2D,  texRender->id);
   glUniform1i(texShaded->input[0], 0);
 
-  glUseProgram(texShaded->shader->GetProgramObject());
-
   GLfloat projection[16];
   glGetFloatv(GL_PROJECTION_MATRIX, projection); 
-  projection[0] = 7.0;
   glUniformMatrix4fv(texShaded->input[2], 1, GL_FALSE, projection);
 
   GLfloat modelview[16];
   glGetFloatv(GL_MODELVIEW_MATRIX, modelview); 
   glUniformMatrix4fv(texShaded->input[1], 1, GL_FALSE, modelview);
 
-  printMatrix(projection, "projection (in)"); 
-  cout << "Projection 'input': " 
-       << texShaded->input[2] 
-       << " Projection location: " 
-       << glGetUniformLocation( texShaded->shader->GetProgramObject(), "projection") 
-       << endl;
-
-  checkerror();
+  // Debugging
+  // printMatrix(projection, "projection (in)"); 
+  // cout << "Projection 'input': " 
+  //      << texShaded->input[2] 
+  //      << " Projection location: " 
+  //      << glGetUniformLocation( texShaded->shader->GetProgramObject(), "projection") 
+  //      << endl;
+  // checkerror();
   
   // Read out the contents the 'projection' uniform
   glGetUniformfv((texShaded->shader)->GetProgramObject(), texShaded->input[2], projection);
