@@ -25,6 +25,27 @@
 #include "vtkCamera.h"
 #include "vtkMath.h"
 
+void checkerror(){
+  GLenum err;
+   if ((err = glGetError()) != GL_NO_ERROR) {
+        cerr << "OpenGL error: " << err << endl;
+	
+	std::string error;
+	switch(err) {
+	case GL_INVALID_OPERATION:      error="INVALID_OPERATION";      break;
+	case GL_INVALID_ENUM:           error="INVALID_ENUM";           break;
+	case GL_INVALID_VALUE:          error="INVALID_VALUE";          break;
+	case GL_OUT_OF_MEMORY:          error="OUT_OF_MEMORY";          break;
+	case GL_INVALID_FRAMEBUFFER_OPERATION:  error="INVALID_FRAMEBUFFER_OPERATION";  break;
+	}
+ 
+	std::cout << "GL_" << error.c_str() << std::endl;
+
+	exit(1);
+    }
+   return;
+}
+
 vtkCxxRevisionMacro(vtkSaliencyPass, "$Revision: 1.9 $");
 vtkStandardNewMacro(vtkSaliencyPass);
 
@@ -86,11 +107,20 @@ void vtkSaliencyPass::init()
 
   createAuxiliaryTexture(texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
   createAuxiliaryTexture(texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
-  texShaded->input[0]= glGetUniformLocationARB(texShaded->shader->GetProgramObject(),"Texture0");
-  texShaded->input[1]= glGetUniformLocationARB(texShaded->shader->GetProgramObject(),"modelview");
-  texShaded->input[2]= glGetUniformLocationARB(texShaded->shader->GetProgramObject(),"projection");
 
-  texShaded->shader= shaderManager.loadfromFile("Distortion.vs", "Distortion.fs");
+  // Gotta read and compile in order to set up the uniforms!
+  texShaded->shader = shaderManager.loadfromFile((char*) "Distortion.vs", (char*) "Distortion.fs");
+
+  texShaded->input[0]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"Texture0");
+  texShaded->input[1]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"modelview");
+  texShaded->input[2]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"projection");
+  
+  for(int i = 0; i != 3; i++){
+      if(-1 == texShaded->input[i]){
+	  std::cout << "Failed to set get uniform location for input[" << i << "]. "<< std::endl;
+	  exit(1);
+      }
+  }
   //texShaded->shader= shaderManager.loadfromFile("simple.vs", "simple.fs");
   //texShaded->shader= shaderManager.loadfromMemory(0, "void main(void){ gl_FragColor = vec4(1,0,0,1);}");
   
@@ -149,22 +179,22 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
     {
 	createAuxiliaryTexture(texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
 	createAuxiliaryTexture(texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO, true);
-	texShaded->input[0]= glGetUniformLocationARB(texShaded->shader->GetProgramObject(),"Texture0");
-	texShaded->input[1]= glGetUniformLocationARB(texShaded->shader->GetProgramObject(),"modelview");
-	texShaded->input[2]= glGetUniformLocationARB(texShaded->shader->GetProgramObject(),"projectionview");
+	texShaded->input[0]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"Texture0");
+	texShaded->input[1]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"modelview");
+	texShaded->input[2]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"projectionview");
       FramebufferObject::Disable();
       m_old_width = w;
       m_old_height = h;
     }
 
-    bool cAverages = true;
-    int blurMask = 0.0;
-    int modifyFocus = 1.0;
-    int filterMethod = 0.0;
-    int coherence = 1.0;
-    int passes = 2.0;
-    float levelsWeight = 1.0f/(passes+2.0f);
-    bool showmap = false;
+    // bool cAverages = true;
+    // int blurMask = 0.0;
+    // int modifyFocus = 1.0;
+    // int filterMethod = 0.0;
+    // int coherence = 1.0;
+    // int passes = 2.0;
+    // float levelsWeight = 1.0f/(passes+2.0f);
+    // bool showmap = false;
 
 
     //render to my fbo
@@ -200,7 +230,13 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 
 
   texShaded->shader->begin();
-  
+
+  glUniform1i(texShaded->input[0], 0);        // ????
+
+  // just to be sure...
+  glUseProgram((texShaded->shader)->GetProgramObject());
+  checkerror();
+
   float projection[16];
   float modelview[16];
 
@@ -212,19 +248,86 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D,  texRender->id);
 
-  glUniformMatrix4fv(texShaded->input[1], sizeof(modelview), GL_FALSE, &modelview[0]);
-  glUniformMatrix4fv(texShaded->input[2], sizeof(projection), GL_FALSE, &projection[0]);
+  // std::cout << std::endl;
+  // std::cout << "readin: ";
+  // for(int i = 0; i != 16; i++){
+  //     if(0 == (i%4) ) std::cout << std::endl;
+  //     std::cout << modelview[i] << " ";
+  // }
+  // std::cout << std::endl;
+
+  // std::cout << "pre-set" << std::endl;
+  // checkerror();
+
+  const GLfloat readin[16] = {
+      1, 2, 3, 4, 
+      5, 6, 7, 8, 
+      1, 2, 3, 4, 
+      5, 6, 7, 8
+  };
+
+  GLfloat blah2 = 7.0;
+
+  // // Print the READOUT data
+  // std::cout << std::endl;
+  // std::cout << "readout: ";
+  // for(int i = 0; i != 16; i++){
+  //     if(0 == (i%4) ) std::cout << std::endl;
+  //     std::cout << readout[i] << " ";
+  // }
+  // std::cout << std::endl;
+
+  // set the uniform to READOUT
+
+  GLint location = glGetUniformLocation( texShaded->shader->GetProgramObject(), "blah");
+  glUniform1fv(location, 1, &blah2);
+  glUniformMatrix4fv(texShaded->input[1], 1, GL_FALSE, &readin[0]);
+  glUniformMatrix4fv(texShaded->input[2], 1, 0, &modelview[0]);
+
+  // Check that gl hasn't thrown any errors...
+  checkerror();
+  
+  GLfloat readout[16];
+
+  // Read out the contents the 'projection' uniform
+  glGetUniformfv((texShaded->shader)->GetProgramObject(), texShaded->input[1], readout);
+  std::cout << std::endl;
+  std::cout << "projection: ";
+  for(int i = 0; i != 16; i++){
+      if(0 == (i%4) ) std::cout << std::endl;
+      std::cout << readout[i] << " ";
+  }
+  std::cout << std::endl;
+
+  // glGetUniformfv((texShaded->shader)->GetProgramObject(), texShaded->input[2], readout);
+  // std::cout << std::endl;
+  // std::cout << "modelview: ";
+  // for(int i = 0; i != 16; i++){
+  //     if(0 == (i%4) ) std::cout << std::endl;
+  //     std::cout << readout[i] << " ";
+  // }
+  // std::cout << std::endl;
+
+
+  // GLenum err = glGetError();
+  // if (GL_NO_ERROR != err)
+  // {
+  //   printf("GL error with %s\n", glewGetErrorString(err));
+  //   exit(1);
+  // }
 
 //  Check what OpenGL matrices are being given to the shaders...
-  // std::cout << std::endl;
+  //  std::cout << std::endl;
   // std::cout << "projection matrix: ";
   // for(int i = 0; i != 16; i++){
   //     if(0 == (i%4) ) std::cout << std::endl;
-  //     std::cout <<projection[i] << " ";
+  //     std::cout << projection[i] << " ";
   // }
+  // std::cout << std::endl;
 
 
-  glUniform1iARB(texShaded->input[0], 0);        // ????
+
+
   texShaded->drawQuad();
   glBindTexture(GL_TEXTURE_2D, 0);
 
