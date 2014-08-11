@@ -120,11 +120,12 @@ void vtkSaliencyPass::init()
   texShaded->input[0]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"Texture0");
   texShaded->input[1]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"modelview");
   texShaded->input[2]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"projection");
-  
+  texShaded->input[3]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"offset");
+
   // check that uniform locations were set
-  for(int i = 0; i != 3; i++){
+  for(int i = 0; i != 4; i++){
       if(-1 == texShaded->input[i]){
-	  std::cout << "Failed to set get uniform location for input[" << i << "]. "<< std::endl;
+	  std::cout << "Failed to set uniform location for input[" << i << "]. "<< std::endl;
 	  exit(1);
       }
   }
@@ -157,6 +158,7 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 
   int size[2];
   s->GetWindowSize(size);
+  // this is the same as the viewport size (and I'm not exactly sure why...)
 
   this->NumberOfRenderedProps=0;
 
@@ -174,13 +176,21 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
     int height;
     int size[2];
     s->GetWindowSize(size);
-    width=size[0];
-    height=size[1];
+    width  = size[0];
+    height = size[1];
     int w = width;
     int h = height;
     m_height = h;
     m_width = w;
     init();
+
+    cout << "m_old_width: " << m_old_width << endl;
+    cout << "w: " << w << endl;
+    cout << "m_old_height: " << m_old_height << endl;
+    cout << "h: " << h << endl;
+    cout << "size[0]: "   << size[0] << endl;
+    cout << "ViewportX: " << ViewportWidth << endl;
+
 
     if(w != m_old_width && h != m_old_height )
     {
@@ -189,9 +199,14 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 	texShaded->input[0]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"Texture0");
 	texShaded->input[1]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"modelview");
 	texShaded->input[2]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"projection");
+	texShaded->input[3]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"offset");
+
+	int texwidth;
+	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &texwidth);
+	cout << "GL_TEXTURE_2D Width: " << texwidth << endl;
 
 	// check that uniform locations are *still* okay (caught a bug with this)
-	for(int i = 0; i != 3; i++){
+	for(int i = 0; i != 4; i++){
 	    if(-1 == texShaded->input[i]){
 		std::cout << "Failed (TAKE 2) to set get uniform location for input[" 
 			  << i << "]. "<< std::endl;
@@ -216,17 +231,17 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-    glPushMatrix();
-    glMatrixMode(GL_PROJECTION);
-    glPushMatrix();
-    glLoadIdentity();
-    glOrtho(0, w, 0, h, 0, -2); 
+    glPushMatrix(); // push matrix on whatever current stack is (MODELVIEW?)
 
+    glMatrixMode(GL_PROJECTION); // switch to PROJECTION
+    glPushMatrix();              // push current to PROJECTION stack
+    glLoadIdentity();            // 
+    glOrtho(0, w, 0, h, 0, -2);  // multiply current matrix (I) to apply clipping
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+    glMatrixMode(GL_MODELVIEW);  // target MODELVIEW
+    glLoadIdentity();            //
 
-    glMatrixMode(GL_PROJECTION);
+    glMatrixMode(GL_PROJECTION); 
     glLoadIdentity();
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -241,7 +256,11 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
   // texture:
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D,  texRender->id);
+
   glUniform1i(texShaded->input[0], 0);
+
+  GLfloat offset[2] = {(GLfloat)ViewportX, (GLfloat) ViewportY};
+  glUniform2fv(texShaded->input[3], 1, offset);
 
   GLfloat projection[16];
   glGetFloatv(GL_PROJECTION_MATRIX, projection); 
@@ -261,11 +280,12 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
   // checkerror();
   
   // Read out the contents the 'projection' uniform
-  glGetUniformfv((texShaded->shader)->GetProgramObject(), texShaded->input[2], projection);
-  
-  printMatrix(projection, "projection (out)");
+  // glGetUniformfv((texShaded->shader)->GetProgramObject(), 
+  // 		 texShaded->input[2], projection);
+  // printMatrix(projection, "projection (out)");
 
   texShaded->drawQuad();
+//  glOrtho(0, w/2, 0, h/2, 0, -2);  // sets clipping (need to add offset?)
   glBindTexture(GL_TEXTURE_2D, 0);
 
   glEnable(GL_DEPTH_TEST);

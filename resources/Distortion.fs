@@ -1,5 +1,9 @@
 #version 440
-layout( location = 6 ) uniform sampler2D Texture0;
+//layout( location = 0 ) 
+uniform sampler2D Texture0;
+//layout( location = 3 ) 
+uniform vec2 offset;
+
 out vec4 FragColor;
 
 vec2 texelSize = 1.0 / vec2(textureSize(Texture0, 0));
@@ -32,5 +36,16 @@ void main(){
     vec2 coord = barrel_warp(screen_coords);
 
     clamp(coord, vec2(0), vec2(1));
-    FragColor = texture2D(Texture0, coord);
+
+    if (screen_coords.x > 0.5)
+	FragColor = vec4(0.5, 0, 0, 0.5);
+    else
+	FragColor = vec4(0, 0.2, 0, 0.5);
+
+    FragColor += texture2D(Texture0, coord);
+
+    // dummy to get offset in
+    if (offset.x < 0)
+	FragColor += vec4(0.01);
+
 }
