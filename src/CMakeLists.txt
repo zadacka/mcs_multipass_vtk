@@ -23,6 +23,9 @@ include_directories(
 #  ${OPENGL_INCLUDE_DIR}
 )
 
+####################
+# Make multipass_vtk
+####################
 set(EXE multipass_vtk)
 
 # include_directories()
@@ -47,7 +50,21 @@ set(SOURCES
 
 add_executable(${EXE} ${SOURCES})
 
-target_link_libraries(${EXE} ${VTK_LIBRARIES} ${GLEW_LIBRARY} )#${OPENGL_LIBRARIES})
+target_link_libraries(${EXE} ${VTK_LIBRARIES} ${GLEW_LIBRARY} )
+
+####################
+# Make multipass_vtk
+####################
+
+set(EXE brain)
+set(SOURCES 
+  brain.cpp
+)
+add_executable(${EXE} ${SOURCES})
+target_link_libraries(${EXE} ${VTK_LIBRARIES} ${GLEW_LIBRARY} )
+
+
+
 message(STATUS "OpenGL library: " ${OPENGL_LIBRARIES})
 message(STATUS "Glew library: " ${GLEW_LIBRARY})
 
