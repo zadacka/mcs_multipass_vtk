@@ -51,8 +51,8 @@ int main()
     vtkSmartPointer<vtkRenderWindow> renWin = vtkRenderWindow::New();
     renWin->SetSize(1280, 800);
 
-    renWin->AddRenderer(ren_l); //ren_l->SetViewport(viewport_l);
-//    renWin->AddRenderer(ren_r); //ren_r->SetViewport(viewport_r);
+    renWin->AddRenderer(ren_l); ren_l->SetViewport(viewport_l);
+    renWin->AddRenderer(ren_r); ren_r->SetViewport(viewport_r);
 
 
     // Multipass Render
@@ -79,12 +79,12 @@ int main()
   saliencyP->SetDelegatePass(cameraP);
 
     ren_l->SetPass(saliencyP);
-//    ren_r->SetPass(saliencyP);
+    ren_r->SetPass(saliencyP);
 
     for (int i = 0; i < 360; ++i){
     	renWin->Render();
-    	ren_l->GetActiveCamera()->Azimuth( 4 );
-    	ren_r->GetActiveCamera()->Azimuth( 1 );
+    	ren_l->GetActiveCamera()->Azimuth( 1 );
+//    	ren_r->GetActiveCamera()->Azimuth( 4 );
     }
 
 

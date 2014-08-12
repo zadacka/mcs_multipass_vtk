@@ -25,6 +25,20 @@
 #include "vtkCamera.h"
 #include "vtkMath.h"
 
+void check_uniforms(bool enabled){
+    // if(enabled){  
+    // 	// check that uniform locations were set
+    // 	for(int i = 0; i != 4; i++){
+    // 	    if(-1 == texShaded->input[i]){
+    // 		std::cout << "Failed to set uniform location for input[" 
+    // 			  << i << "]. "<< std::endl;
+    // 		exit(1);
+    // 	    }
+    // 	}
+    // }
+    return;
+}
+
 void checkerror(){
   GLenum err;
    if ((err = glGetError()) != GL_NO_ERROR) {
@@ -122,13 +136,8 @@ void vtkSaliencyPass::init()
   texShaded->input[2]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"projection");
   texShaded->input[3]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"offset");
 
-  // check that uniform locations were set
-  for(int i = 0; i != 4; i++){
-      if(-1 == texShaded->input[i]){
-	  std::cout << "Failed to set uniform location for input[" << i << "]. "<< std::endl;
-	  exit(1);
-      }
-  }
+  check_uniforms(false);
+
   //texShaded->shader= shaderManager.loadfromFile("simple.vs", "simple.fs");
   //texShaded->shader= shaderManager.loadfromMemory(0, "void main(void){ gl_FragColor = vec4(1,0,0,1);}");
   
@@ -169,6 +178,8 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
       &this->ViewportX,
       &this->ViewportY);
 
+
+
   if(this->DelegatePass!=0)
   {
 
@@ -184,14 +195,6 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
     m_width = w;
     init();
 
-    cout << "m_old_width: " << m_old_width << endl;
-    cout << "w: " << w << endl;
-    cout << "m_old_height: " << m_old_height << endl;
-    cout << "h: " << h << endl;
-    cout << "size[0]: "   << size[0] << endl;
-    cout << "ViewportX: " << ViewportWidth << endl;
-
-
     if(w != m_old_width && h != m_old_height )
     {
 	createAuxiliaryTexture(texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
@@ -206,17 +209,25 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 	cout << "GL_TEXTURE_2D Width: " << texwidth << endl;
 
 	// check that uniform locations are *still* okay (caught a bug with this)
-	for(int i = 0; i != 4; i++){
-	    if(-1 == texShaded->input[i]){
-		std::cout << "Failed (TAKE 2) to set get uniform location for input[" 
-			  << i << "]. "<< std::endl;
-		exit(1);
-	    }
-	}
+	check_uniforms(false);
+
       FramebufferObject::Disable();
       m_old_width = w;
       m_old_height = h;
     }
+////////////////////////////////////////////////////////////////////////////////////
+// Test
+////////////////////////////////////////////////////////////////////////////////////
+
+
+//    texRender->fbo->Bind();
+//    glEnable(GL_DEPTH_TEST);
+//    s->GetFrameBuffer()->Bind();
+//    this->DelegatePass->Render(s);
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Custom rendering Shiz
+////////////////////////////////////////////////////////////////////////////////////
 
     //render to my fbo
     texRender->fbo->Bind();
@@ -231,31 +242,31 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-    glPushMatrix(); // push matrix on whatever current stack is (MODELVIEW?)
-
-    glMatrixMode(GL_PROJECTION); // switch to PROJECTION
-    glPushMatrix();              // push current to PROJECTION stack
-    glLoadIdentity();            // 
-    glOrtho(0, w, 0, h, 0, -2);  // multiply current matrix (I) to apply clipping
-
-    glMatrixMode(GL_MODELVIEW);  // target MODELVIEW
-    glLoadIdentity();            //
-
-    glMatrixMode(GL_PROJECTION); 
-    glLoadIdentity();
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+//  glOrtho(0, w, 0, h, -1, 1);  // multiply current matrix (I) to apply clipping
 
   //////render
   FramebufferObject::Disable();
 
+  glMatrixMode(GL_MODELVIEW);  // switch to MODELVIEW
+  glPushMatrix();              // push current to MODELVIEW stack
+  glLoadIdentity();            //
+
+
+  glMatrixMode(GL_PROJECTION); // switch to PROJECTION
+  glPushMatrix();              // push current to PROJECTION stack
+  glLoadIdentity();
+//  glTranslatef(0.4, 0.4, 0);
+//  glOrtho(0, w/2, 0, h/2, 0, -2);  // sets clipping (need to add offset?)
 
   // this does program->use, so we can do uniform stuff...
   texShaded->shader->begin();
 
+  glEnable(GL_DEPTH_TEST);
+
   // texture:
-  glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D,  texRender->id);
+  glActiveTexture(GL_TEXTURE0);                 // texture unit 0 is active
+  glBindTexture(GL_TEXTURE_2D,  texRender->id); // bind texRender to tex unit 0, as a 2D tex
+  
 
   glUniform1i(texShaded->input[0], 0);
 
@@ -270,30 +281,25 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
   glGetFloatv(GL_MODELVIEW_MATRIX, modelview); 
   glUniformMatrix4fv(texShaded->input[1], 1, GL_FALSE, modelview);
 
-  // Debugging
-  // printMatrix(projection, "projection (in)"); 
-  // cout << "Projection 'input': " 
-  //      << texShaded->input[2] 
-  //      << " Projection location: " 
-  //      << glGetUniformLocation( texShaded->shader->GetProgramObject(), "projection") 
-  //      << endl;
-  // checkerror();
-  
-  // Read out the contents the 'projection' uniform
-  // glGetUniformfv((texShaded->shader)->GetProgramObject(), 
-  // 		 texShaded->input[2], projection);
-  // printMatrix(projection, "projection (out)");
+  glViewport(ViewportX, ViewportY, ViewportWidth, ViewportHeight);
+//  glScissor(ViewportX, ViewportY, ViewportWidth, ViewportHeight);
 
   texShaded->drawQuad();
-//  glOrtho(0, w/2, 0, h/2, 0, -2);  // sets clipping (need to add offset?)
+
+  glDisable(GL_DEPTH_TEST);
+
   glBindTexture(GL_TEXTURE_2D, 0);
 
-  glEnable(GL_DEPTH_TEST);
-  glMatrixMode(GL_PROJECTION);
-  glPopMatrix();
+
+
+  glMatrixMode(GL_PROJECTION); 
+  glPopMatrix();                // throw away top matrix from stack
   glMatrixMode(GL_MODELVIEW);
-  glPopMatrix();
+  glPopMatrix();                // throw away top matrix from stack
+
   texShaded->shader->end();
+
+////////////////////////////////////////////////////////////////////////////////
 
 }
   else

@@ -1,13 +1,13 @@
 #version 440
-//layout( location = 0 ) 
-uniform sampler2D Texture0;
-//layout( location = 3 ) 
-uniform vec2 offset;
+layout( location = 0 ) uniform sampler2D Texture0;
+layout( location = 3 ) uniform vec2 offset;
 
 out vec4 FragColor;
 
 vec2 texelSize = 1.0 / vec2(textureSize(Texture0, 0));
-vec2 screen_coords = gl_FragCoord.xy * texelSize;
+vec2 screen_coords = (gl_FragCoord.xy - offset) * texelSize; 
+// correct for viewport offset
+// Texture0 does not have any offset!
 
 // PASSTHROUGH
 // void main(){
@@ -38,14 +38,10 @@ void main(){
     clamp(coord, vec2(0), vec2(1));
 
     if (screen_coords.x > 0.5)
-	FragColor = vec4(0.5, 0, 0, 0.5);
+	FragColor = vec4(0.4, 0, 0, 0.5);
     else
-	FragColor = vec4(0, 0.2, 0, 0.5);
+	FragColor = vec4(0, 0.4, 0, 0.5);
 
     FragColor += texture2D(Texture0, coord);
-
-    // dummy to get offset in
-    if (offset.x < 0)
-	FragColor += vec4(0.01);
 
 }
