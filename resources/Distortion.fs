@@ -37,11 +37,11 @@ void main(){
 
     clamp(coord, vec2(0), vec2(1));
 
-    if (screen_coords.x > 0.5)
-	FragColor = vec4(0.4, 0, 0, 0.5);
-    else
-	FragColor = vec4(0, 0.4, 0, 0.5);
+//    if (screen_coords.x > 0.5)
+//	FragColor = vec4(0.4, 0, 0, 0.5);
+//    else
+//	FragColor = vec4(0, 0.4, 0, 0.5);
 
-    FragColor += texture2D(Texture0, coord);
+    FragColor = texture2D(Texture0, coord);
 
 }
