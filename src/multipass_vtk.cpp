@@ -23,17 +23,32 @@
 #include "vtkLightsPass.h"
 #include "vtkClearZPass.h"
 
-
+#include "vtkGenericDataObjectReader.h"
 
 
 int main()
 {
-    // set up source data
-    vtkSmartPointer<vtkConeSource> cone = vtkConeSource::New();
+
+    std::string inputFilename = "btain.vtk";
+ 
+    // read data
+    vtkSmartPointer<vtkGenericDataObjectReader> reader = 
+	vtkSmartPointer<vtkGenericDataObjectReader>::New();
+    reader->SetFileName(inputFilename.c_str());
+    reader->Update();
+ 
+    // polydata
+    vtkSmartPointer<vtkPolyData> output = reader->GetPolyDataOutput();
+
+
+
+    // // set up source data
+    // vtkSmartPointer<vtkConeSource> cone = vtkConeSource::New();
 
     // mapper 
     vtkSmartPointer<vtkPolyDataMapper> coneMapper = vtkPolyDataMapper::New();
-    coneMapper->SetInputConnection( cone->GetOutputPort() );
+    //coneMapper->SetInputConnection( cone->GetOutputPort() );
+    coneMapper->SetInputConnection(output->GetProducerPort());
 
     // actor
     vtkSmartPointer<vtkActor> coneActor = vtkActor::New();
@@ -42,10 +57,12 @@ int main()
     // renderer
     vtkSmartPointer<vtkRenderer> ren_l = vtkRenderer::New();
     ren_l->AddActor( coneActor );
+    ren_l->SetBackground( 0.1, 0.2, 0.4 );
     vtkSmartPointer<vtkRenderer> ren_r = vtkRenderer::New();
     ren_r->AddActor( coneActor );
-
-    // render window
+    ren_r->SetBackground( 0.1, 0.2, 0.4 );
+ 
+   // render window
     double viewport_l[4] = {0.0, 0.0, 0.5, 1.0};
     double viewport_r[4] = {0.5, 0.0, 1.0, 1.0};
     vtkSmartPointer<vtkRenderWindow> renWin = vtkRenderWindow::New();
@@ -84,6 +101,7 @@ int main()
     for (int i = 0; i < 360; ++i){
     	renWin->Render();
     	ren_l->GetActiveCamera()->Azimuth( 1 );
+//	cameraP->translate(i, 0, 0);
 //    	ren_r->GetActiveCamera()->Azimuth( 4 );
     }
 

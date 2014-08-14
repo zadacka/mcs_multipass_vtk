@@ -53,7 +53,7 @@ add_executable(${EXE} ${SOURCES})
 target_link_libraries(${EXE} ${VTK_LIBRARIES} ${GLEW_LIBRARY} )
 
 ####################
-# Make multipass_vtk
+# Make brain
 ####################
 
 set(EXE brain)
@@ -63,6 +63,27 @@ set(SOURCES
 add_executable(${EXE} ${SOURCES})
 target_link_libraries(${EXE} ${VTK_LIBRARIES} ${GLEW_LIBRARY} )
 
+####################
+# Make paraview_port
+####################
+#
+#
+#set(SOURCES 
+#  paraview_port.cpp
+#  paraview_port/vtkOVRCamera.cxx    
+#  paraview_port/vtkOVRPostPass.h
+#  paraview_port/vtkDualStereoPass.cxx  
+#  paraview_port/vtkOVRCamera.h      
+#  paraview_port/vtkDualStereoPass.h    
+#  paraview_port/vtkOVRPostPass.cxx  
+#
+#)
+#add_executable(${EXE} ${SOURCES})
+#target_link_libraries(${EXE} ${VTK_LIBRARIES} ${GLEW_LIBRARY} )
+#
+####################
+####################
+####################
 
 
 message(STATUS "OpenGL library: " ${OPENGL_LIBRARIES})
@@ -72,4 +93,11 @@ configure_file(../resources/Distortion.fs Distortion.fs COPYONLY)
 configure_file(../resources/Distortion.vs Distortion.vs COPYONLY)
 configure_file(../resources/simple.fs simple.fs COPYONLY)
 configure_file(../resources/simple.vs simple.vs COPYONLY)
+
+configure_file(../resources/btain.vtk btain.vtk COPYONLY)
+
+#configure_file(../resources/vtkOVRPostShaderFull_fs.glsl 
+#  vtkOVRPostShaderFull_fs.glsl COPYONLY)
+#configure_file(../resources/vtkOVRPostShaderSimple_fs.glsl
+#  vtkOVRPostShaderFull_fs.glsl COPYONLY)
 
