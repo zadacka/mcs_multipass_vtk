@@ -25,30 +25,29 @@
 
 #include "vtkGenericDataObjectReader.h"
 
+bool use_cone = false;
 
 int main()
 {
-
-    std::string inputFilename = "btain.vtk";
- 
-    // read data
-    vtkSmartPointer<vtkGenericDataObjectReader> reader = 
-	vtkSmartPointer<vtkGenericDataObjectReader>::New();
-    reader->SetFileName(inputFilename.c_str());
-    reader->Update();
- 
-    // polydata
-    vtkSmartPointer<vtkPolyData> output = reader->GetPolyDataOutput();
-
-
-
-    // // set up source data
-    // vtkSmartPointer<vtkConeSource> cone = vtkConeSource::New();
-
-    // mapper 
+    // mapper, defined outside if statement
     vtkSmartPointer<vtkPolyDataMapper> coneMapper = vtkPolyDataMapper::New();
-    //coneMapper->SetInputConnection( cone->GetOutputPort() );
-    coneMapper->SetInputConnection(output->GetProducerPort());
+
+    // get source data
+    if(!use_cone){
+	std::string inputFilename = "btain.vtk";
+ 
+	// read data
+	vtkSmartPointer<vtkGenericDataObjectReader> reader = 
+	    vtkSmartPointer<vtkGenericDataObjectReader>::New();
+	reader->SetFileName(inputFilename.c_str());
+	reader->Update();
+	// polydata
+	vtkSmartPointer<vtkPolyData> output = reader->GetPolyDataOutput();
+	coneMapper->SetInputConnection(output->GetProducerPort());
+    } else{
+	vtkSmartPointer<vtkConeSource> cone = vtkConeSource::New();
+	coneMapper->SetInputConnection( cone->GetOutputPort() );
+    }
 
     // actor
     vtkSmartPointer<vtkActor> coneActor = vtkActor::New();
