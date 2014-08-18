@@ -9,7 +9,7 @@ find_package(VTK 5.10.1 EXACT REQUIRED)
 # message(STATUS "VTK MAJOR VERSION " ${CMAKE_MAJOR_VERSION}) # reports V3: wrong!
 
 find_package(GLEW REQUIRED)
-#find_package(OpenGL)
+find_package(OpenGL)
 
 include(${VTK_USE_FILE})
 set_property(DIRECTORY APPEND PROPERTY COMPILE_DEFINITIONS ${VTK_DEFINITIONS})
@@ -20,7 +20,7 @@ include_directories(
   fbo 
   glsl 
   ${CMAKE_CURRENT_SOURCE_DIR}
-#  ${OPENGL_INCLUDE_DIR}
+  ${OPENGL_INCLUDE_DIR}
 )
 
 ####################
@@ -50,7 +50,7 @@ set(SOURCES
 
 add_executable(${EXE} ${SOURCES})
 
-target_link_libraries(${EXE} ${VTK_LIBRARIES} ${GLEW_LIBRARY} )
+target_link_libraries(${EXE} ${VTK_LIBRARIES} ${GLEW_LIBRARY} ${OPENGL_LIBRARIES})
 
 ####################
 # Make brain
@@ -61,7 +61,7 @@ set(SOURCES
   brain.cpp
 )
 add_executable(${EXE} ${SOURCES})
-target_link_libraries(${EXE} ${VTK_LIBRARIES} ${GLEW_LIBRARY} )
+target_link_libraries(${EXE} ${VTK_LIBRARIES} ${GLEW_LIBRARY})
 
 ####################
 # Make paraview_port
