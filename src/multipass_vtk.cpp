@@ -25,7 +25,7 @@
 
 #include "vtkGenericDataObjectReader.h"
 
-bool use_cone = false;
+bool use_cone = true;
 
 int main()
 {
@@ -65,7 +65,13 @@ int main()
     double viewport_l[4] = {0.0, 0.0, 0.5, 1.0};
     double viewport_r[4] = {0.5, 0.0, 1.0, 1.0};
     vtkSmartPointer<vtkRenderWindow> renWin = vtkRenderWindow::New();
+
+    // size and shift window
     renWin->SetSize(1280, 800);
+    renWin->SetPosition(1680, 0); 
+
+    // alternative: full screen & mirror BUT sets to 1280 x 720!!
+    // renWin->FullScreenOn();
 
     renWin->AddRenderer(ren_l); ren_l->SetViewport(viewport_l);
     renWin->AddRenderer(ren_r); ren_r->SetViewport(viewport_r);
