@@ -3,27 +3,26 @@
 
 # Add VTK, insist that it uses 6.2, 
 # include vtkWrappingTools so that the path is correct and no linker errors
-# find_package(VTK 6.2 EXACT REQUIRED COMPONENTS vtkRenderingOpenGL vtkInteractionStyle NO_MODULE)
-find_package(VTK 6.2 EXACT REQUIRED COMPONENTS 
-# core set from here: http://www.visitusers.org/index.php?title=VTK_6.0_Upgrade
-#vtkFiltersFlowpaths # not available
-  vtkIOPLY            # not available
-  vtkCommonCore
-  vtkFiltersHybrid
-  vtkFiltersModeling
-  vtkInteractionStyle
-  vtkIOLegacy
-  vtkIOXML
-  vtkRenderingAnnotation
-  vtkRenderingFreeType
-  vtkRenderingFreeTypeOpenGL
-  vtkRenderingOpenGL
-  
-  NO_MODULE
-)
+#find_package(VTK 6.2 EXACT REQUIRED COMPONENTS 
+## core set from here: http://www.visitusers.org/index.php?title=VTK_6.0_Upgrade
+##vtkFiltersFlowpaths # not available
+#  vtkIOPLY            # not available
+#  vtkCommonCore
+#  vtkFiltersHybrid
+#  vtkFiltersModeling
+#  vtkInteractionStyle
+#  vtkIOLegacy
+#  vtkIOXML
+#  vtkRenderingAnnotation
+#  vtkRenderingFreeType
+#  vtkRenderingFreeTypeOpenGL
+#  vtkRenderingOpenGL
+#  
+#  NO_MODULE
+#)
 
-#set(VTK_DIR /usr/local/lib/vtk-5.10)
-#find_package(VTK 5.10 EXACT REQUIRED)
+## set(VTK_DIR /usr/local/lib/vtk-5.10) (does nothing!)
+find_package(VTK 5.10.1 EXACT REQUIRED NO_MODULE)
 
 include(${VTK_USE_FILE})
 # message(STATUS "VTK MAJOR VERSION " ${CMAKE_MAJOR_VERSION}) # reports V3: wrong!
@@ -118,5 +117,5 @@ configure_file(../resources/btain.vtk btain.vtk COPYONLY)
 configure_file(../resources/vtkOVRPostShaderFull_fs.glsl 
   vtkOVRPostShaderFull_fs.glsl COPYONLY)
 configure_file(../resources/vtkOVRPostShaderSimple_fs.glsl
-  vtkOVRPostShaderFull_fs.glsl COPYONLY)
+  vtkOVRPostShaderSimple_fs.glsl COPYONLY)
 
