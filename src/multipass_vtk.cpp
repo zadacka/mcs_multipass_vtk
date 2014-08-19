@@ -82,32 +82,44 @@ int main()
     // vtkOpaquePass *opaque=vtkOpaquePass::New();
     // vtkVolumetricPass *volume=vtkVolumetricPass::New();
     // vtkClearZPass* clearz=vtkClearZPass::New();
-    vtkDefaultPass* defal=vtkDefaultPass::New();
-    vtkLightsPass* lights=vtkLightsPass::New();
 
-  vtkRenderPassCollection *passes=vtkRenderPassCollection::New();
-//  passes->AddItem(opaque);
-//  passes->AddItem(volume);
-  passes->AddItem(defal);
-  passes->AddItem(lights);
+    // left
+    vtkDefaultPass* defal_l=vtkDefaultPass::New();
+    vtkLightsPass* lights_l=vtkLightsPass::New();
 
-  vtkSequencePass *seq=vtkSequencePass::New();
-  seq->SetPasses(passes);
+    vtkRenderPassCollection *passes_l=vtkRenderPassCollection::New();
+    passes_l->AddItem(defal_l);
+    passes_l->AddItem(lights_l);
+    vtkSequencePass *seq_l=vtkSequencePass::New();
+    seq_l->SetPasses(passes_l);
+    vtkCameraPass *cameraP_l=vtkCameraPass::New();
+    cameraP_l->SetDelegatePass(seq_l);
+    vtkSaliencyPass* saliencyP_l = vtkSaliencyPass::New();
+    saliencyP_l->SetDelegatePass(cameraP_l);
 
-  vtkCameraPass *cameraP=vtkCameraPass::New();
-  cameraP->SetDelegatePass(seq);
 
-  vtkSaliencyPass* saliencyP = vtkSaliencyPass::New();
-  saliencyP->SetDelegatePass(cameraP);
+    // right
+    vtkDefaultPass* defal_r=vtkDefaultPass::New();
+    vtkLightsPass* lights_r=vtkLightsPass::New();
+    vtkRenderPassCollection *passes_r=vtkRenderPassCollection::New();
+    passes_r->AddItem(defal_r);
+    passes_r->AddItem(lights_r);
+    vtkSequencePass *seq_r=vtkSequencePass::New();
+    seq_r->SetPasses(passes_r);
+    vtkCameraPass *cameraP_r=vtkCameraPass::New();
+    cameraP_r->SetDelegatePass(seq_r);
+    vtkSaliencyPass* saliencyP_r = vtkSaliencyPass::New();
+    saliencyP_r->SetDelegatePass(cameraP_r);
 
-    ren_l->SetPass(saliencyP);
-    ren_r->SetPass(saliencyP);
+
+    ren_l->SetPass(saliencyP_l);
+    ren_r->SetPass(saliencyP_r);
 
     for (int i = 0; i < 360; ++i){
     	renWin->Render();
     	ren_l->GetActiveCamera()->Azimuth( 1 );
 //	cameraP->translate(i, 0, 0);
-//    	ren_r->GetActiveCamera()->Azimuth( 4 );
+    	ren_r->GetActiveCamera()->Azimuth( -1 );
     }
 
 
