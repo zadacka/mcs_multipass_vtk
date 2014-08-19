@@ -105,6 +105,7 @@ vtkSaliencyPass::vtkSaliencyPass()
   this->isInit = false;
   computeAverages = false;
   actualWeights = new float[3];
+
 }
 
 // ----------------------------------------------------------------------------
@@ -178,7 +179,22 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
       &this->ViewportX,
       &this->ViewportY);
 
+  GLint m_viewport[4];
+  glGetIntegerv( GL_VIEWPORT, m_viewport );
+  cout << "Screen size is " 
+       << m_viewport[0] << ", "  
+       << m_viewport[1] << ", "  
+       << m_viewport[2] << ", "  
+       << m_viewport[3] << ", "  << endl;
 
+
+  cout << "  w: " << size[0] 
+       << ", h: " << size[1] 
+       << ", vw:" << this->ViewportWidth 
+       << ", vh:" << this->ViewportHeight
+       << ", vx:" << this->ViewportX
+       << ", vy:" << this->ViewportY
+       << endl;
 
   if(this->DelegatePass!=0)
   {
@@ -194,7 +210,7 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
     m_height = h;
     m_width = w;
     init();
-
+        
     if(w != m_old_width && h != m_old_height )
     {
 	createAuxiliaryTexture(texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
@@ -219,85 +235,102 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 // Test
 ////////////////////////////////////////////////////////////////////////////////////
 
+   // glEnable(GL_DEPTH_TEST); // clears the depth buffer, will draw anything closer
+   // FramebufferObject::Disable();
+   // this->DelegatePass->Render(s);
 
-//    texRender->fbo->Bind();
-//    glEnable(GL_DEPTH_TEST);
-//    s->GetFrameBuffer()->Bind();
-//    this->DelegatePass->Render(s);
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Custom rendering Shiz
 ////////////////////////////////////////////////////////////////////////////////////
 
-    //render to my fbo
+    //render to my fbo 
     texRender->fbo->Bind();
     glEnable(GL_DEPTH_TEST);
     this->DelegatePass->Render(s);
     this->NumberOfRenderedProps+=this->DelegatePass->GetNumberOfRenderedProps();
     // AZ: texRender should now contain scene as per VTK pipieline
-
     glDisable(GL_DEPTH_TEST);
-    glEnable(GL_TEXTURE_2D); // THIS IS DEPRECATED in 4.0???
-    // shouldn't be needed since it is overriden by shader
-
+    glEnable(GL_TEXTURE_2D);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-//  glOrtho(0, w, 0, h, -1, 1);  // multiply current matrix (I) to apply clipping
+    FramebufferObject::Disable();
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D,  texRender->id);
 
-  //////render
-  FramebufferObject::Disable();
+    glScissor(ViewportX, ViewportY, ViewportWidth, ViewportHeight);
+    glEnable(GL_SCISSOR_TEST);
+    glEnable(GL_DEPTH_TEST);
 
-  glMatrixMode(GL_MODELVIEW);  // switch to MODELVIEW
-  glPushMatrix();              // push current to MODELVIEW stack
-  glLoadIdentity();            //
+    texRender->drawQuad();
 
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_SCISSOR_TEST);
+    glDisable(GL_DEPTH_TEST);
 
-  glMatrixMode(GL_PROJECTION); // switch to PROJECTION
-  glPushMatrix();              // push current to PROJECTION stack
-  glLoadIdentity();
-//  glTranslatef(0.4, 0.4, 0);
-//  glOrtho(0, w/2, 0, h/2, 0, -2);  // sets clipping (need to add offset?)
+    
+//////////////////////////////// 
 
-  // this does program->use, so we can do uniform stuff...
-  texShaded->shader->begin();
+//     glEnable(GL_TEXTURE_2D); // THIS IS DEPRECATED in 4.0???
+//     // shouldn't be needed since it is overriden by shader
 
-  glEnable(GL_DEPTH_TEST);
+//     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-  // texture:
-  glActiveTexture(GL_TEXTURE0);                 // texture unit 0 is active
-  glBindTexture(GL_TEXTURE_2D,  texRender->id); // bind texRender to tex unit 0, as a 2D tex
-  
+// //  glOrtho(0, w, 0, h, -1, 1);  // multiply current matrix (I) to apply clipping
 
-  glUniform1i(texShaded->input[0], 0);
+ //   //////render
+//    FramebufferObject::Disable();
 
-  GLfloat offset[2] = {(GLfloat)ViewportX, (GLfloat) ViewportY};
-  glUniform2fv(texShaded->input[3], 1, offset);
-
-  GLfloat projection[16];
-  glGetFloatv(GL_PROJECTION_MATRIX, projection); 
-  glUniformMatrix4fv(texShaded->input[2], 1, GL_FALSE, projection);
-
-  GLfloat modelview[16];
-  glGetFloatv(GL_MODELVIEW_MATRIX, modelview); 
-  glUniformMatrix4fv(texShaded->input[1], 1, GL_FALSE, modelview);
-
-  glViewport(ViewportX, ViewportY, ViewportWidth, ViewportHeight);
-//  glScissor(ViewportX, ViewportY, ViewportWidth, ViewportHeight);
-
-  texShaded->drawQuad();
-
-  glDisable(GL_DEPTH_TEST);
-
-  glBindTexture(GL_TEXTURE_2D, 0);
+//    glMatrixMode(GL_MODELVIEW);  // switch to MODELVIEW
+//    glPushMatrix();              // push current to MODELVIEW stack
+//    glLoadIdentity();            //
 
 
+//    glMatrixMode(GL_PROJECTION); // switch to PROJECTION
+//    glPushMatrix();              // push current to PROJECTION stack
+//    glLoadIdentity();
+// // //  glTranslatef(0.4, 0.4, 0);
+// // //  glOrtho(0, w/2, 0, h/2, 0, -2);  // sets clipping (need to add offset?)
 
-  glMatrixMode(GL_PROJECTION); 
-  glPopMatrix();                // throw away top matrix from stack
-  glMatrixMode(GL_MODELVIEW);
-  glPopMatrix();                // throw away top matrix from stack
 
-  texShaded->shader->end();
+//    //  texShaded->shader->begin();    // does program->use, lets us do uniform stuff...
+
+//    // texture:
+//    glActiveTexture(GL_TEXTURE0);                 // texture unit 0 is active
+//    glBindTexture(GL_TEXTURE_2D,  texRender->id); // bind texRender to tex unit 0, as a 2D tex
+//    glUniform1i(texShaded->input[0], 0);          // and pass that through as a uniform
+
+// //   GLfloat offset[2] = {(GLfloat)ViewportX, (GLfloat) ViewportY};
+// //   glUniform2fv(texShaded->input[3], 1, offset);
+
+//    GLfloat projection[16];
+//    glGetFloatv(GL_PROJECTION_MATRIX, projection); 
+//    glUniformMatrix4fv(texShaded->input[2], 1, GL_FALSE, projection);
+
+//    GLfloat modelview[16];
+//    glGetFloatv(GL_MODELVIEW_MATRIX, modelview); 
+//    glUniformMatrix4fv(texShaded->input[1], 1, GL_FALSE, modelview);
+
+// // //  glViewport(ViewportX, ViewportY, ViewportWidth, ViewportHeight);
+// //   // glScissor(ViewportX, ViewportY, ViewportWidth, ViewportHeight);
+// //   // glEnable(GL_SCISSOR_TEST); // limits the region of the buffer that is rendered to
+
+//    glEnable(GL_DEPTH_TEST);
+
+//    texShaded->drawQuad();
+
+//    glDisable(GL_DEPTH_TEST);
+// //   // glDisable(GL_SCISSOR_TEST);
+// //   glBindTexture(GL_TEXTURE_2D, 0);
+
+
+
+//    glMatrixMode(GL_PROJECTION); 
+//    glPopMatrix();                // throw away top matrix from stack
+//    glMatrixMode(GL_MODELVIEW);
+//    glPopMatrix();                // throw away top matrix from stack
+
+//    texShaded->shader->end();
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -340,10 +373,18 @@ void vtkSaliencyPass::createAuxiliaryTexture(TextureInfo *&texCurrent, unsigned 
 
   // glActiveTexture(GL_TEXTURE0 + 1);
 
-  texCurrent->imgWidth = m_width;
-  texCurrent->imgHeight = m_height;
-  texCurrent->texWidth = m_width;
-  texCurrent->texHeight = m_height;
+  texCurrent->imgWidth = m_width *2;//+ ViewportX;
+  texCurrent->imgHeight = m_height + ViewportY;
+  texCurrent->texWidth = m_width *2;//+ ViewportX;
+  texCurrent->texHeight = m_height + ViewportY;
+
+  cout << " m_width:  " << m_width
+       << " m_height: " << m_height
+       << " texW:  " << texCurrent->texWidth
+       << " texH:  " << texCurrent->texHeight
+       << " imgW:  " << texCurrent->imgWidth
+       << " imgH:  " << texCurrent->imgHeight
+       << endl;
 
   texCurrent->format = GL_RGB;
   texCurrent->internalFormat = GL_RGB32F_ARB;
