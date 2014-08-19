@@ -6,8 +6,6 @@ out vec4 FragColor;
 
 vec2 texelSize = 1.0 / vec2(textureSize(Texture0, 0));
 vec2 viewport_position = (gl_FragCoord.xy - offset) * texelSize; 
-// correct for viewport offset
-// Texture0 does not have any offset!
 
 // PASSTHROUGH
 // void main(){
