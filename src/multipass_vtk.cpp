@@ -56,10 +56,10 @@ int main()
     // renderer
     vtkSmartPointer<vtkRenderer> ren_l = vtkRenderer::New();
     ren_l->AddActor( coneActor );
-    ren_l->SetBackground( 0.1, 0.2, 0.4 );
+//    ren_l->SetBackground( 0.1, 0.2, 0.4 );
     vtkSmartPointer<vtkRenderer> ren_r = vtkRenderer::New();
     ren_r->AddActor( coneActor );
-    ren_r->SetBackground( 0.1, 0.2, 0.4 );
+//    ren_r->SetBackground( 0.1, 0.2, 0.4 );
  
    // render window
     double viewport_l[4] = {0.0, 0.0, 0.5, 1.0};
@@ -98,22 +98,22 @@ int main()
     saliencyP_l->SetDelegatePass(cameraP_l);
 
 
-    // // right
-    // vtkDefaultPass* defal_r=vtkDefaultPass::New();
-    // vtkLightsPass* lights_r=vtkLightsPass::New();
-    // vtkRenderPassCollection *passes_r=vtkRenderPassCollection::New();
-    // passes_r->AddItem(defal_r);
-    // passes_r->AddItem(lights_r);
-    // vtkSequencePass *seq_r=vtkSequencePass::New();
-    // seq_r->SetPasses(passes_r);
-    // vtkCameraPass *cameraP_r=vtkCameraPass::New();
-    // cameraP_r->SetDelegatePass(seq_r);
-    // vtkSaliencyPass* saliencyP_r = vtkSaliencyPass::New();
-    // saliencyP_r->SetDelegatePass(cameraP_r);
+    // right
+    vtkDefaultPass* defal_r=vtkDefaultPass::New();
+    vtkLightsPass* lights_r=vtkLightsPass::New();
+    vtkRenderPassCollection *passes_r=vtkRenderPassCollection::New();
+    passes_r->AddItem(defal_r);
+    passes_r->AddItem(lights_r);
+    vtkSequencePass *seq_r=vtkSequencePass::New();
+    seq_r->SetPasses(passes_r);
+    vtkCameraPass *cameraP_r=vtkCameraPass::New();
+    cameraP_r->SetDelegatePass(seq_r);
+    vtkSaliencyPass* saliencyP_r = vtkSaliencyPass::New();
+    saliencyP_r->SetDelegatePass(cameraP_r);
 
 
     ren_l->SetPass(saliencyP_l);
-    ren_r->SetPass(saliencyP_l);
+    ren_r->SetPass(saliencyP_r);
 
     for (int i = 0; i < 360; ++i){
 
@@ -121,16 +121,16 @@ int main()
 
 	double camera_position[3];
 	ren_l->GetActiveCamera()->GetPosition(camera_position);
-	camera_position[0] += 0.10;
+	camera_position[0] += 0.2;
 	ren_r->GetActiveCamera()->SetPosition(camera_position);
 
 	// double camera_focus[3];
-	// camera_focus[0]    += 0.20;
 	// ren_l->GetActiveCamera()->GetFocalPoint(camera_focus);
+	// camera_focus[0]    += 0.1;
 	// ren_r->GetActiveCamera()->SetFocalPoint(camera_focus);
 
-   	// ren_l->GetActiveCamera()->Azimuth( 1 );
-   	// ren_r->GetActiveCamera()->Azimuth( -1 );
+   	 ren_l->GetActiveCamera()->Azimuth( 1 );
+   	 ren_r->GetActiveCamera()->Azimuth( 1 );
     }
 
 

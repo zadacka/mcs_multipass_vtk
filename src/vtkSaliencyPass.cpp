@@ -277,7 +277,7 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 	texShaded->shader->begin();    // does program->use, lets us do uniform stuff...
 
 	// // set all uniforms
-	glUniform1i(texShaded->input[0], 0);          // and pass that through as a uniform
+	glUniform1i(texShaded->input[0], 0); // and pass that through as a uniform
 	glUniformMatrix4fv(texShaded->input[1], 1, GL_FALSE, modelview);
 	glUniformMatrix4fv(texShaded->input[2], 1, GL_FALSE, projection);
 	glUniform2fv(texShaded->input[3], 1, offset);
