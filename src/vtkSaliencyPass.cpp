@@ -40,8 +40,8 @@ void check_uniforms(bool enabled){
 }
 
 void checkerror(){
-  GLenum err;
-   if ((err = glGetError()) != GL_NO_ERROR) {
+    GLenum err;
+    if ((err = glGetError()) != GL_NO_ERROR) {
         cerr << "OpenGL error: " << err << endl;
 	
 	std::string error;
@@ -56,17 +56,17 @@ void checkerror(){
 	std::cout << "GL_" << error.c_str() << std::endl;
 	exit(1);
     }
-   return;
+    return;
 }
 
 void printMatrix(float matrix[16], std::string name = "matrix"){
-  std::cout << std::endl;
-  std::cout << name;
-  for(int i = 0; i != 16; i++){
-      if(0 == (i%4) ) std::cout << std::endl;
-      std::cout << matrix[i] << " ";
-  }
-  std::cout << std::endl;
+    std::cout << std::endl;
+    std::cout << name;
+    for(int i = 0; i != 16; i++){
+	if(0 == (i%4) ) std::cout << std::endl;
+	std::cout << matrix[i] << " ";
+    }
+    std::cout << std::endl;
 }
 
 vtkCxxRevisionMacro(vtkSaliencyPass, "$Revision: 1.9 $");
@@ -76,35 +76,35 @@ vtkStandardNewMacro(vtkSaliencyPass);
 
 using namespace std;
 static char* readFile(const char *fileName) {
-  char* text;
+    char* text;
 
-  if (fileName != NULL) {
-    FILE *file = fopen(fileName, "rt");
+    if (fileName != NULL) {
+	FILE *file = fopen(fileName, "rt");
 
-    if (file != NULL) {
-      fseek(file, 0, SEEK_END);
-      int count = ftell(file);
-      rewind(file);
+	if (file != NULL) {
+	    fseek(file, 0, SEEK_END);
+	    int count = ftell(file);
+	    rewind(file);
 
-      if (count > 0) {
-        text = (char*)malloc(sizeof(char) * (count + 1));
-        count = fread(text, sizeof(char), count, file);
-        text[count] = '\0';
-      }
-      fclose(file);
+	    if (count > 0) {
+		text = (char*)malloc(sizeof(char) * (count + 1));
+		count = fread(text, sizeof(char), count, file);
+		text[count] = '\0';
+	    }
+	    fclose(file);
+	}
     }
-  }
-  return text;
+    return text;
 }
 
 // ----------------------------------------------------------------------------
 vtkSaliencyPass::vtkSaliencyPass()
 {
-  this->Supported=false;
-  this->SupportProbed=false;
-  this->isInit = false;
-  computeAverages = false;
-  actualWeights = new float[3];
+    this->Supported=false;
+    this->SupportProbed=false;
+    this->isInit = false;
+    computeAverages = false;
+    actualWeights = new float[3];
 
 }
 
@@ -114,43 +114,43 @@ vtkSaliencyPass::~vtkSaliencyPass(){}
 // ----------------------------------------------------------------------------
 void vtkSaliencyPass::init()
 {
-  if(this->isInit)
-    return;
+    if(this->isInit)
+	return;
 
-  const GLenum err = glewInit();
-  if (GLEW_OK != err)
-  {
-    // Problem: glewInit failed, something is seriously wrong.
-    printf("BufferedQmitkRenderWindow Error: glewInit failed with %s\n", glewGetErrorString(err));
-  }
+    const GLenum err = glewInit();
+    if (GLEW_OK != err)
+    {
+	// Problem: glewInit failed, something is seriously wrong.
+	printf("BufferedQmitkRenderWindow Error: glewInit failed with %s\n", glewGetErrorString(err));
+    }
 
-  glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-  createAuxiliaryTexture(texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
-  createAuxiliaryTexture(texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
+    createAuxiliaryTexture(texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
+    createAuxiliaryTexture(texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
 
-  // Gotta read and compile in order to set up the uniforms!
-  texShaded->shader = shaderManager.loadfromFile((char*) "Distortion.vs", (char*) "Distortion.fs");
+    // Gotta read and compile in order to set up the uniforms!
+    texShaded->shader = shaderManager.loadfromFile((char*) "Distortion.vs", (char*) "Distortion.fs");
 
-  texShaded->input[0]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"Texture0");
-  texShaded->input[1]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"modelview");
-  texShaded->input[2]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"projection");
-  texShaded->input[3]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"offset");
+    texShaded->input[0]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"Texture0");
+    texShaded->input[1]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"modelview");
+    texShaded->input[2]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"projection");
+    texShaded->input[3]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"offset");
 
-  check_uniforms(false);
+    check_uniforms(false);
 
-  //texShaded->shader= shaderManager.loadfromFile("simple.vs", "simple.fs");
-  //texShaded->shader= shaderManager.loadfromMemory(0, "void main(void){ gl_FragColor = vec4(1,0,0,1);}");
+    //texShaded->shader= shaderManager.loadfromFile("simple.vs", "simple.fs");
+    //texShaded->shader= shaderManager.loadfromMemory(0, "void main(void){ gl_FragColor = vec4(1,0,0,1);}");
   
-if (0 == texShaded->shader){
-    std::cout << glGetString(GL_VERSION) << std::endl;
-      std::cout << "Error Loading, compiling or linking shader" << std::endl;
-      std::cout << "and that you're RUNNING in the right dir" << std::endl;
-      exit(1);
-  }
-  FramebufferObject::Disable();
+    if (0 == texShaded->shader){
+	std::cout << glGetString(GL_VERSION) << std::endl;
+	std::cout << "Error Loading, compiling or linking shader" << std::endl;
+	std::cout << "and that you're RUNNING in the right dir" << std::endl;
+	exit(1);
+    }
+    FramebufferObject::Disable();
 
-  this->isInit = true;
+    this->isInit = true;
 
 }
 
@@ -158,116 +158,145 @@ if (0 == texShaded->shader){
 // ----------------------------------------------------------------------------
 void vtkSaliencyPass::PrintSelf(ostream& os, vtkIndent indent)
 {
-  this->Superclass::PrintSelf(os,indent);
+    this->Superclass::PrintSelf(os,indent);
 }
 
 void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 {
 
-  assert("pre: s_exists" && s!=0);
+    assert("pre: s_exists" && s!=0);
 
-  int size[2];
-  s->GetWindowSize(size);
-  // this is the same as the viewport size (and I'm not exactly sure why...)
-
-  this->NumberOfRenderedProps=0;
-
-  vtkRenderer *r=s->GetRenderer();
-  r->GetTiledSizeAndOrigin(
-      &this->ViewportWidth,
-      &this->ViewportHeight,
-      &this->ViewportX,
-      &this->ViewportY);
-
-  GLint m_viewport[4];
-  glGetIntegerv( GL_VIEWPORT, m_viewport );
-  cout << "Screen size is " 
-       << m_viewport[0] << ", "  
-       << m_viewport[1] << ", "  
-       << m_viewport[2] << ", "  
-       << m_viewport[3] << ", "  << endl;
-
-
-  cout << "  w: " << size[0] 
-       << ", h: " << size[1] 
-       << ", vw:" << this->ViewportWidth 
-       << ", vh:" << this->ViewportHeight
-       << ", vx:" << this->ViewportX
-       << ", vy:" << this->ViewportY
-       << endl;
-
-  if(this->DelegatePass!=0)
-  {
-
-    int width;
-    int height;
     int size[2];
     s->GetWindowSize(size);
-    width  = size[0];
-    height = size[1];
-    int w = width;
-    int h = height;
-    m_height = h;
-    m_width = w;
-    init();
-        
-    if(w != m_old_width && h != m_old_height )
+    // this is the same as the viewport size (and I'm not exactly sure why...)
+
+    this->NumberOfRenderedProps=0;
+
+    vtkRenderer *r=s->GetRenderer();
+    r->GetTiledSizeAndOrigin(
+	&this->ViewportWidth,
+	&this->ViewportHeight,
+	&this->ViewportX,
+	&this->ViewportY);
+
+    GLint m_viewport[4];
+    glGetIntegerv( GL_VIEWPORT, m_viewport );
+    cout << "Screen size is " 
+	 << m_viewport[0] << ", "  
+	 << m_viewport[1] << ", "  
+	 << m_viewport[2] << ", "  
+	 << m_viewport[3] << ", "  << endl;
+
+
+    cout << "  w: " << size[0] 
+	 << ", h: " << size[1] 
+	 << ", vw:" << this->ViewportWidth 
+	 << ", vh:" << this->ViewportHeight
+	 << ", vx:" << this->ViewportX
+	 << ", vy:" << this->ViewportY
+	 << endl;
+
+    if(this->DelegatePass!=0)
     {
-	createAuxiliaryTexture(texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
-	createAuxiliaryTexture(texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO, true);
-	texShaded->input[0]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"Texture0");
-	texShaded->input[1]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"modelview");
-	texShaded->input[2]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"projection");
-	texShaded->input[3]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"offset");
 
-	int texwidth;
-	glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &texwidth);
-	cout << "GL_TEXTURE_2D Width: " << texwidth << endl;
+	int width;
+	int height;
+	int size[2];
+	s->GetWindowSize(size);
+	width  = size[0];
+	height = size[1];
+	int w = width;
+	int h = height;
+	m_height = h;
+	m_width = w;
+	init();
+        
+	if(w != m_old_width && h != m_old_height )
+	{
+	    createAuxiliaryTexture(texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
+	    createAuxiliaryTexture(texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO, true);
+	    texShaded->input[0]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"Texture0");
+	    texShaded->input[1]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"modelview");
+	    texShaded->input[2]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"projection");
+	    texShaded->input[3]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"offset");
 
-	// check that uniform locations are *still* okay (caught a bug with this)
-	check_uniforms(false);
+	    int texwidth;
+	    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &texwidth);
+	    cout << "GL_TEXTURE_2D Width: " << texwidth << endl;
 
-      FramebufferObject::Disable();
-      m_old_width = w;
-      m_old_height = h;
-    }
+	    // check that uniform locations are *still* okay (caught a bug with this)
+	    check_uniforms(false);
+
+	    FramebufferObject::Disable();
+	    m_old_width = w;
+	    m_old_height = h;
+	}
 ////////////////////////////////////////////////////////////////////////////////////
 // Test
 ////////////////////////////////////////////////////////////////////////////////////
 
-   // glEnable(GL_DEPTH_TEST); // clears the depth buffer, will draw anything closer
-   // FramebufferObject::Disable();
-   // this->DelegatePass->Render(s);
+	// glEnable(GL_DEPTH_TEST); // clears the depth buffer, will draw anything closer
+	// FramebufferObject::Disable();
+	// this->DelegatePass->Render(s);
 
 
 /////////////////////////////////////////////////////////////////////////////////////
 // Custom rendering Shiz
 ////////////////////////////////////////////////////////////////////////////////////
 
-    //render to my fbo 
-    texRender->fbo->Bind();
-    glEnable(GL_DEPTH_TEST);
-    this->DelegatePass->Render(s);
-    this->NumberOfRenderedProps+=this->DelegatePass->GetNumberOfRenderedProps();
-    // AZ: texRender should now contain scene as per VTK pipieline
-    glDisable(GL_DEPTH_TEST);
-    glEnable(GL_TEXTURE_2D);
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	//render to my fbo 
+	texRender->fbo->Bind();
+	glEnable(GL_DEPTH_TEST);
+	this->DelegatePass->Render(s);
+	// this->NumberOfRenderedProps+=this->DelegatePass->GetNumberOfRenderedProps();
+	// // AZ: texRender should now contain scene as per VTK pipieline
+	glDisable(GL_DEPTH_TEST);
+	glEnable(GL_TEXTURE_2D);
+	// glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-    FramebufferObject::Disable();
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D,  texRender->id);
+	FramebufferObject::Disable();
 
-    glScissor(ViewportX, ViewportY, ViewportWidth, ViewportHeight);
-    glEnable(GL_SCISSOR_TEST);
-    glEnable(GL_DEPTH_TEST);
+	// get matrices ready for vertex shader
+	glMatrixMode(GL_MODELVIEW);  // switch to MODELVIEW
+	glPushMatrix();              // push current to MODELVIEW stack
+	glLoadIdentity();            // load something innocuous
+	GLfloat modelview[16];
+	glGetFloatv(GL_MODELVIEW_MATRIX, modelview); 
 
-    texRender->drawQuad();
+	glMatrixMode(GL_PROJECTION); // switch to PROJECTION
+	glPushMatrix();              // push current to PROJECTION stack
+	glLoadIdentity();            // load something innocuous
+	GLfloat projection[16];
+	glGetFloatv(GL_PROJECTION_MATRIX, projection); 
 
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glDisable(GL_SCISSOR_TEST);
-    glDisable(GL_DEPTH_TEST);
+	GLfloat offset[2] = {(GLfloat)ViewportX, (GLfloat) ViewportY};
 
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D,  texRender->id);
+
+	texShaded->shader->begin();    // does program->use, lets us do uniform stuff...
+
+	// // set all uniforms
+	glUniform1i(texShaded->input[0], 0);          // and pass that through as a uniform
+	glUniformMatrix4fv(texShaded->input[1], 1, GL_FALSE, modelview);
+	glUniformMatrix4fv(texShaded->input[2], 1, GL_FALSE, projection);
+	glUniform2fv(texShaded->input[3], 1, offset);
+
+	glScissor(ViewportX, ViewportY, ViewportWidth, ViewportHeight);
+	glEnable(GL_SCISSOR_TEST);
+	glEnable(GL_DEPTH_TEST);
+
+	texRender->drawQuad();
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_DEPTH_TEST);
+
+	// clean up matrix stack
+	glMatrixMode(GL_PROJECTION);  glPopMatrix();                
+	glMatrixMode(GL_MODELVIEW);   glPopMatrix();
+	
+	texShaded->shader->end();
     
 //////////////////////////////// 
 
@@ -278,7 +307,7 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 
 // //  glOrtho(0, w, 0, h, -1, 1);  // multiply current matrix (I) to apply clipping
 
- //   //////render
+	//   //////render
 //    FramebufferObject::Disable();
 
 //    glMatrixMode(GL_MODELVIEW);  // switch to MODELVIEW
@@ -334,11 +363,11 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-}
-  else
-  {
-    vtkWarningMacro(<<" no delegate.");
-  }
+    }
+    else
+    {
+	vtkWarningMacro(<<" no delegate.");
+    }
 }
 
 // ----------------------------------------------------------------------------
@@ -347,7 +376,7 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 // \pre s_exists: s!=0
 void vtkSaliencyPass::Render(const vtkRenderState *s)
 {
-  showSaliency(s);
+    showSaliency(s);
 }
 
 // ----------------------------------------------------------------------------
@@ -357,95 +386,95 @@ void vtkSaliencyPass::Render(const vtkRenderState *s)
 // \pre w_exists: w!=0
 void vtkSaliencyPass::ReleaseGraphicsResources(vtkWindow *w)
 {
-  assert("pre: w_exists" && w!=0);
+    assert("pre: w_exists" && w!=0);
 
-  this->Superclass::ReleaseGraphicsResources(w);
+    this->Superclass::ReleaseGraphicsResources(w);
 
 }
 
 void vtkSaliencyPass::createAuxiliaryTexture(TextureInfo *&texCurrent, unsigned char flags, bool resize)
 {
-  if(resize)
-    glDeleteTextures(1,&texCurrent->id);
+    if(resize)
+	glDeleteTextures(1,&texCurrent->id);
 
-  if(!resize)
-    texCurrent = new TextureInfo;
-
-  // glActiveTexture(GL_TEXTURE0 + 1);
-
-  texCurrent->imgWidth = m_width *2;//+ ViewportX;
-  texCurrent->imgHeight = m_height + ViewportY;
-  texCurrent->texWidth = m_width *2;//+ ViewportX;
-  texCurrent->texHeight = m_height + ViewportY;
-
-  cout << " m_width:  " << m_width
-       << " m_height: " << m_height
-       << " texW:  " << texCurrent->texWidth
-       << " texH:  " << texCurrent->texHeight
-       << " imgW:  " << texCurrent->imgWidth
-       << " imgH:  " << texCurrent->imgHeight
-       << endl;
-
-  texCurrent->format = GL_RGB;
-  texCurrent->internalFormat = GL_RGB32F_ARB;
-  texCurrent->u0 = (0);
-  texCurrent->u1 = (texCurrent->imgWidth / (float)texCurrent->texWidth);
-
-  if (flags&FLIP_Y)
-  {
-    texCurrent->v1 = (texCurrent->imgHeight / (float)texCurrent->texHeight);
-    texCurrent->v0 = (0);
-  }
-  else
-  {
-    texCurrent->v0 = (texCurrent->imgHeight / (float)texCurrent->texHeight);
-    texCurrent->v1 = (0);
-  }
-
-  glEnable(GL_TEXTURE_2D);
-  glGenTextures(1, &texCurrent->id);
-  glBindTexture(GL_TEXTURE_2D, texCurrent->id);
-  glTexImage2D(GL_TEXTURE_2D, 0, texCurrent->internalFormat, texCurrent->texWidth, texCurrent->texHeight, 0,  texCurrent->format, GL_FLOAT, NULL);
-  if (flags&GENERATE_MIPMAPS)
-  {
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-    glGenerateMipmapEXT(GL_TEXTURE_2D);
-  }
-  else if (flags&INTERPOLATED)
-  {
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-  }
-  else 
-  {
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-  }
-
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glDisable(GL_TEXTURE_2D);
-
-  if (flags&GENERATE_FBO)
-  {
     if(!resize)
-      texCurrent->fbo = new FramebufferObject;
-    texCurrent->rbo = new Renderbuffer;
-    texCurrent->rbo->Set( GL_DEPTH_COMPONENT24, texCurrent->texWidth, texCurrent->texHeight );
-    texCurrent->fbo->Bind();
-    texCurrent->fbo->AttachTexture(GL_TEXTURE_2D, texCurrent->id, GL_COLOR_ATTACHMENT0_EXT);
-    texCurrent->fbo->AttachRenderBuffer(texCurrent->rbo->GetId(), GL_DEPTH_ATTACHMENT_EXT);
-    texCurrent->fbo->IsValid();
-  }
+	texCurrent = new TextureInfo;
+
+    // glActiveTexture(GL_TEXTURE0 + 1);
+
+    texCurrent->imgWidth = m_width *2;//+ ViewportX;
+    texCurrent->imgHeight = m_height + ViewportY;
+    texCurrent->texWidth = m_width *2;//+ ViewportX;
+    texCurrent->texHeight = m_height + ViewportY;
+
+    cout << " m_width:  " << m_width
+	 << " m_height: " << m_height
+	 << " texW:  " << texCurrent->texWidth
+	 << " texH:  " << texCurrent->texHeight
+	 << " imgW:  " << texCurrent->imgWidth
+	 << " imgH:  " << texCurrent->imgHeight
+	 << endl;
+
+    texCurrent->format = GL_RGB;
+    texCurrent->internalFormat = GL_RGB32F_ARB;
+    texCurrent->u0 = (0);
+    texCurrent->u1 = (texCurrent->imgWidth / (float)texCurrent->texWidth);
+
+    if (flags&FLIP_Y)
+    {
+	texCurrent->v1 = (texCurrent->imgHeight / (float)texCurrent->texHeight);
+	texCurrent->v0 = (0);
+    }
+    else
+    {
+	texCurrent->v0 = (texCurrent->imgHeight / (float)texCurrent->texHeight);
+	texCurrent->v1 = (0);
+    }
+
+    glEnable(GL_TEXTURE_2D);
+    glGenTextures(1, &texCurrent->id);
+    glBindTexture(GL_TEXTURE_2D, texCurrent->id);
+    glTexImage2D(GL_TEXTURE_2D, 0, texCurrent->internalFormat, texCurrent->texWidth, texCurrent->texHeight, 0,  texCurrent->format, GL_FLOAT, NULL);
+    if (flags&GENERATE_MIPMAPS)
+    {
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glGenerateMipmapEXT(GL_TEXTURE_2D);
+    }
+    else if (flags&INTERPOLATED)
+    {
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    }
+    else 
+    {
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    }
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+
+    if (flags&GENERATE_FBO)
+    {
+	if(!resize)
+	    texCurrent->fbo = new FramebufferObject;
+	texCurrent->rbo = new Renderbuffer;
+	texCurrent->rbo->Set( GL_DEPTH_COMPONENT24, texCurrent->texWidth, texCurrent->texHeight );
+	texCurrent->fbo->Bind();
+	texCurrent->fbo->AttachTexture(GL_TEXTURE_2D, texCurrent->id, GL_COLOR_ATTACHMENT0_EXT);
+	texCurrent->fbo->AttachRenderBuffer(texCurrent->rbo->GetId(), GL_DEPTH_ATTACHMENT_EXT);
+	texCurrent->fbo->IsValid();
+    }
 
 }
 

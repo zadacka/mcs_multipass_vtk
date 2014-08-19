@@ -98,28 +98,39 @@ int main()
     saliencyP_l->SetDelegatePass(cameraP_l);
 
 
-    // right
-    vtkDefaultPass* defal_r=vtkDefaultPass::New();
-    vtkLightsPass* lights_r=vtkLightsPass::New();
-    vtkRenderPassCollection *passes_r=vtkRenderPassCollection::New();
-    passes_r->AddItem(defal_r);
-    passes_r->AddItem(lights_r);
-    vtkSequencePass *seq_r=vtkSequencePass::New();
-    seq_r->SetPasses(passes_r);
-    vtkCameraPass *cameraP_r=vtkCameraPass::New();
-    cameraP_r->SetDelegatePass(seq_r);
-    vtkSaliencyPass* saliencyP_r = vtkSaliencyPass::New();
-    saliencyP_r->SetDelegatePass(cameraP_r);
+    // // right
+    // vtkDefaultPass* defal_r=vtkDefaultPass::New();
+    // vtkLightsPass* lights_r=vtkLightsPass::New();
+    // vtkRenderPassCollection *passes_r=vtkRenderPassCollection::New();
+    // passes_r->AddItem(defal_r);
+    // passes_r->AddItem(lights_r);
+    // vtkSequencePass *seq_r=vtkSequencePass::New();
+    // seq_r->SetPasses(passes_r);
+    // vtkCameraPass *cameraP_r=vtkCameraPass::New();
+    // cameraP_r->SetDelegatePass(seq_r);
+    // vtkSaliencyPass* saliencyP_r = vtkSaliencyPass::New();
+    // saliencyP_r->SetDelegatePass(cameraP_r);
 
 
     ren_l->SetPass(saliencyP_l);
-    ren_r->SetPass(saliencyP_r);
+    ren_r->SetPass(saliencyP_l);
 
     for (int i = 0; i < 360; ++i){
+
     	renWin->Render();
-    	ren_l->GetActiveCamera()->Azimuth( 1 );
-//	cameraP->translate(i, 0, 0);
-    	ren_r->GetActiveCamera()->Azimuth( -1 );
+
+	double camera_position[3];
+	ren_l->GetActiveCamera()->GetPosition(camera_position);
+	camera_position[0] += 0.10;
+	ren_r->GetActiveCamera()->SetPosition(camera_position);
+
+	// double camera_focus[3];
+	// camera_focus[0]    += 0.20;
+	// ren_l->GetActiveCamera()->GetFocalPoint(camera_focus);
+	// ren_r->GetActiveCamera()->SetFocalPoint(camera_focus);
+
+   	// ren_l->GetActiveCamera()->Azimuth( 1 );
+   	// ren_r->GetActiveCamera()->Azimuth( -1 );
     }
 
 
