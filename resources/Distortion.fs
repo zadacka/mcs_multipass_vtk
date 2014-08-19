@@ -17,7 +17,7 @@ vec2 viewport_position = (gl_FragCoord.xy - offset) * texelSize;
 vec2 lens_centre     = vec2(0.5);
 vec2 screen_centre   = vec2(0.5);
 vec2 scale           = vec2(0.8);
-vec4 warp_params = vec4(1, 0.4, 0.2, 0);
+vec4 warp_params = vec4(1, 0.22, 0.24, 0);
 
 
 vec2 barrel_warp(vec2 viewport_pos){
