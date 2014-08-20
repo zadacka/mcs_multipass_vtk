@@ -290,7 +290,7 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D,  texRender->id);
 
-	texShaded->shader->begin();    // does program->use, lets us do uniform stuff...
+	texShaded->shader->begin();    // does program->use, enables uniforms
 
 	// // set all uniforms
 	glUniform1i(texShaded->input[0], 0); // and pass that through as a uniform
