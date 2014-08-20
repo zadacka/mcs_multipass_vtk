@@ -1,0 +1,12 @@
+build
+src/OculusSDK/ConfigurePermissionsAndPackages.sh
+src/OculusSDK/Doc/
+src/OculusSDK/Firmware/
+src/OculusSDK/LICENSE.txt
+src/OculusSDK/Makefile
+src/OculusSDK/OculusConfigurationUtility.sh
+src/OculusSDK/OculusWorldDemo.sh
+src/OculusSDK/Samples/
+src/OculusSDK/Tools/
+src/OculusSDK/readme.txt
+
