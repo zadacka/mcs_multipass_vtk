@@ -48,7 +48,7 @@ void main(){
     if ((offset.x == 0) && (coord.x > 0.5)) return;
     if ((offset.x != 0) && (coord.x < 0.5)) return;
     
-    FragColor += texture2D(Texture0, coord);
+    FragColor = texture2D(Texture0, coord);
 }
 
 // Debugging snippets:
