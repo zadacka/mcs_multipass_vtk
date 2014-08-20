@@ -18,9 +18,28 @@ include_directories(
   ${VTK_INCLUDE_DIRS}
   ${GLEW_INCLUDE_DIR} 
   fbo 
-  glsl 
+  glsl
+  OculusSDK/LibOVR/Include/
+  OculusSDK/LibOVR/Src/
+  ${CMAKE_CURRENT_SOURCE_DIR}/riftclass/
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${OPENGL_INCLUDE_DIR}
+)
+
+
+set(OVR_LIBRARIES  
+  ${CMAKE_CURRENT_SOURCE_DIR}/OculusSDK/LibOVR/Lib/Linux/Debug/x86_64/libovr.a
+  GL
+  GLU
+  pthread
+  udev
+  rt
+  Xinerama
+  Xrandr
+  Xxf86vm
+  Xi
+  X11
+  ncurses
 )
 
 ####################
@@ -40,17 +59,19 @@ set(SOURCES
   glsl/glsl.cpp
   glsl/glutils.cpp
   vtkSaliencyPass.h
-  fbo/renderbuffer.h
-  fbo/framebufferObject.h
-  fbo/glErrorUtil.h
-  glsl/glinfo.h
-  glsl/glsl.h
-  glsl/glutils.h
+  riftclass/riftclass.h
+  riftclass/riftclass.cxx
 )
 
 add_executable(${EXE} ${SOURCES})
 
-target_link_libraries(${EXE} ${VTK_LIBRARIES} ${GLEW_LIBRARY} ${OPENGL_LIBRARIES})
+target_link_libraries(
+  ${EXE} 
+  ${VTK_LIBRARIES} 
+  ${GLEW_LIBRARY} 
+  ${OPENGL_LIBRARIES} 
+  ${OVR_LIBRARIES}
+)
 
 ####################
 # Make brain

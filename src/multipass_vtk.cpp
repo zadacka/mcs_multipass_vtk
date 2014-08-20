@@ -27,6 +27,8 @@
 
 #include <vtkRenderWindowInteractor.h>
 
+#include "riftclass.h"
+
 bool use_cone = true;
 
 int main()
