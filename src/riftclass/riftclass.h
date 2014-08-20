@@ -9,6 +9,7 @@ class Rift{
     Rift();
     ~Rift();
     void Output();
+    bool HeadPosition(float&,float&,float&);
 
   private:
     ovrHmd hmd;

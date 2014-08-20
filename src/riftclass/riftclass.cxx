@@ -45,3 +45,22 @@ void Rift::Output()
 	}
     }
 }
+
+bool Rift::HeadPosition(float& yaw,float& pitch,float& roll){
+    frameTiming = ovrHmd_BeginFrameTiming(hmd, 0); 
+    ovrSensorState ss = 
+	ovrHmd_GetSensorState(hmd, frameTiming.ScanoutMidpointSeconds);
+
+    if(ss.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked)){
+	ovrPosef pose = ss.Predicted.Pose;
+	Quatf quat = pose.Orientation;
+	quat.GetEulerAngles<Axis_Y, Axis_X, Axis_Z>(&yaw, &pitch, &roll);
+	yaw = RadToDegree(yaw);
+	pitch = RadToDegree(pitch);
+	roll= RadToDegree(roll);
+	ovrHmd_EndFrameTiming(hmd);
+	return true;
+    }
+    ovrHmd_EndFrameTiming(hmd);
+    return false;
+}
