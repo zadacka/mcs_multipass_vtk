@@ -42,6 +42,8 @@ void main(){
     FragColor = vec4(0);
 
     // guard against 'out of scope'
+    // r-check is a *horrible* NVIDIA driver error bug-fix
+    if (r > 0.85) return;
     if ((coord.x < 0) || (coord.x > 1) || (coord.y < 0) || (coord.y > 1)) return;
     if ((offset.x == 0) && (coord.x > 0.5)) return;
     if ((offset.x != 0) && (coord.x < 0.5)) return;
