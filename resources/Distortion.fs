@@ -25,11 +25,8 @@ void main(){
     vec4 warp_params     = vec4(1, 0.22, 0.24, 0); // TODO: get from Rift
 
     vec2  relative_pos = 2.0 * viewport_position - 1.0; // now in range -1:1
-    float r            = length( relative_pos * vec2(1,1.25)); 
+    float r            = length( relative_pos * vec2(1,1.25)); // aspect ratio 1.25 
     float r_sq         = r * r; 
-	relative_pos.x * relative_pos.x + relative_pos.y * relative_pos.y;
-    //	length( relative_pos * vec2(1,1.25)); 
-    // adjust for aspect ratio 800:640
     vec2  warped_pos   = relative_pos * (
 	warp_params.x +
 	warp_params.y * r_sq +
