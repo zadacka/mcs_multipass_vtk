@@ -274,15 +274,10 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 
 	//render to my fbo 
 	texRender->fbo->Bind();
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); // stops junk showing up
 
 	glEnable(GL_DEPTH_TEST);
-	this->DelegatePass->Render(s);
-	// this->NumberOfRenderedProps+=this->DelegatePass->GetNumberOfRenderedProps();
-	// // AZ: texRender should now contain scene as per VTK pipieline
+	this->DelegatePass->Render(s); // render scene to texRender texture
 	glDisable(GL_DEPTH_TEST);
-	glEnable(GL_TEXTURE_2D);
-	// glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 	FramebufferObject::Disable();
 
@@ -306,7 +301,7 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 
 	texShaded->shader->begin();    // does program->use, enables uniforms
 
-	// // set all uniforms
+	// set all uniforms
 	glUniform1i(texShaded->input[0], 0); // and pass that through as a uniform
 	glUniformMatrix4fv(texShaded->input[1], 1, GL_FALSE, modelview);
 	glUniformMatrix4fv(texShaded->input[2], 1, GL_FALSE, projection);
