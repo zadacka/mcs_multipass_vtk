@@ -126,16 +126,22 @@ void vtkSaliencyPass::init()
 
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-    createAuxiliaryTexture(texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
-    createAuxiliaryTexture(texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
+    createAuxiliaryTexture(
+	texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
+    createAuxiliaryTexture(
+	texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
 
     // Gotta read and compile in order to set up the uniforms!
     texShaded->shader = shaderManager.loadfromFile((char*) "Distortion.vs", (char*) "Distortion.fs");
 
-    texShaded->input[0]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"Texture0");
-    texShaded->input[1]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"modelview");
-    texShaded->input[2]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"projection");
-    texShaded->input[3]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"offset");
+    texShaded->input[0]= glGetUniformLocation(
+	texShaded->shader->GetProgramObject(),"Texture0");
+    texShaded->input[1]= glGetUniformLocation(
+	texShaded->shader->GetProgramObject(),"modelview");
+    texShaded->input[2]= glGetUniformLocation(
+	texShaded->shader->GetProgramObject(),"projection");
+    texShaded->input[3]= glGetUniformLocation(
+	texShaded->shader->GetProgramObject(),"offset");
 
     check_uniforms(false);
 
@@ -213,15 +219,23 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
         
 	if(w != m_old_width && h != m_old_height )
 	{
-	    createAuxiliaryTexture(texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
-	    createAuxiliaryTexture(texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO, true);
-	    texShaded->input[0]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"Texture0");
-	    texShaded->input[1]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"modelview");
-	    texShaded->input[2]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"projection");
-	    texShaded->input[3]= glGetUniformLocation(texShaded->shader->GetProgramObject(),"offset");
+	    createAuxiliaryTexture(
+		texRender, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO );
+	    createAuxiliaryTexture(
+		texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO, true);
+
+	    texShaded->input[0]= glGetUniformLocation(
+		texShaded->shader->GetProgramObject(),"Texture0");
+	    texShaded->input[1]= glGetUniformLocation(
+		texShaded->shader->GetProgramObject(),"modelview");
+	    texShaded->input[2]= glGetUniformLocation(
+		texShaded->shader->GetProgramObject(),"projection");
+	    texShaded->input[3]= glGetUniformLocation(
+		texShaded->shader->GetProgramObject(),"offset");
 
 	    int texwidth;
-	    glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &texwidth);
+	    glGetTexLevelParameteriv(
+		GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &texwidth);
 	    cout << "GL_TEXTURE_2D Width: " << texwidth << endl;
 
 	    // check that uniform locations are *still* okay (caught a bug with this)
