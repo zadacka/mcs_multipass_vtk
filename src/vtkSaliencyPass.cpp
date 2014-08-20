@@ -249,17 +249,15 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 	    m_old_width = w;
 	    m_old_height = h;
 	}
-////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
 // Test
-////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////
 
 	// glEnable(GL_DEPTH_TEST); // clears the depth buffer, will draw anything closer
 	// FramebufferObject::Disable();
 	// this->DelegatePass->Render(s);
 
 
-/////////////////////////////////////////////////////////////////////////////////////
-// Custom rendering Shiz
 ////////////////////////////////////////////////////////////////////////////////////
 
 	//render to my fbo 
@@ -489,13 +487,15 @@ void vtkSaliencyPass::createAuxiliaryTexture(TextureInfo *&texCurrent, unsigned 
 	if(!resize)
 	    texCurrent->fbo = new FramebufferObject;
 	texCurrent->rbo = new Renderbuffer;
-	texCurrent->rbo->Set( GL_DEPTH_COMPONENT24, texCurrent->texWidth, texCurrent->texHeight );
+	texCurrent->rbo->Set( 
+	    GL_DEPTH_COMPONENT24, texCurrent->texWidth, texCurrent->texHeight );
 	texCurrent->fbo->Bind();
-	texCurrent->fbo->AttachTexture(GL_TEXTURE_2D, texCurrent->id, GL_COLOR_ATTACHMENT0_EXT);
-	texCurrent->fbo->AttachRenderBuffer(texCurrent->rbo->GetId(), GL_DEPTH_ATTACHMENT_EXT);
+	texCurrent->fbo->AttachTexture(
+	    GL_TEXTURE_2D, texCurrent->id, GL_COLOR_ATTACHMENT0_EXT);
+	texCurrent->fbo->AttachRenderBuffer(
+	    texCurrent->rbo->GetId(), GL_DEPTH_ATTACHMENT_EXT);
 	texCurrent->fbo->IsValid();
     }
 
 }
-
 
