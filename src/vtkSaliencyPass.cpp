@@ -259,6 +259,18 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 
 
 ////////////////////////////////////////////////////////////////////////////////////
+// Custom rendering Shiz
+///////////////////////////////////////////////////////////////////////////////////
+
+	// // may need to clear the buffer
+	// glActiveTexture(GL_TEXTURE0);
+	// glBindTexture(GL_TEXTURE_2D,  texRender->id);
+	// glScissor(ViewportX, ViewportY, ViewportWidth, ViewportHeight);
+	// glEnable(GL_SCISSOR_TEST);
+	// glClearColor(1,0,0,1);
+	// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// glDisable(GL_SCISSOR_TEST);
+	// glBindTexture(GL_TEXTURE_2D, 0);
 
 	//render to my fbo 
 	texRender->fbo->Bind();
