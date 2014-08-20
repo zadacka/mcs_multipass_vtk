@@ -260,6 +260,8 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 
 	//render to my fbo 
 	texRender->fbo->Bind();
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); // stops junk showing up
+
 	glEnable(GL_DEPTH_TEST);
 	this->DelegatePass->Render(s);
 	// this->NumberOfRenderedProps+=this->DelegatePass->GetNumberOfRenderedProps();
