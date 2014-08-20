@@ -25,6 +25,8 @@
 
 #include "vtkGenericDataObjectReader.h"
 
+#include <vtkRenderWindowInteractor.h>
+
 bool use_cone = true;
 
 int main()
@@ -114,6 +116,14 @@ int main()
 
     ren_l->SetPass(saliencyP_l);
     ren_r->SetPass(saliencyP_r);
+
+    // // use interactor
+    // vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor = 
+    // 	vtkSmartPointer<vtkRenderWindowInteractor>::New();
+    // renderWindowInteractor->SetRenderWindow(renWin);
+
+    // // Begin mouse interaction
+    // renderWindowInteractor->Start();
 
     for (int i = 0; i < 360; ++i){
 
