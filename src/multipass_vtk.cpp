@@ -29,7 +29,7 @@
 
 #include "riftclass.h"
 
-bool use_cone = true;
+bool use_cone = false;
 
 int main()
 {
@@ -127,22 +127,47 @@ int main()
     // // Begin mouse interaction
     // renderWindowInteractor->Start();
 
-    for (int i = 0; i < 360; ++i){
+    float yaw, pitch, roll;
+    float last_yaw, last_pitch, last_roll = 0;
+    Rift my_rift;
 
-    	renWin->Render();
+    for (int i = 0; i < 36000; ++i){
+
+//my_rift.Output();
+if( my_rift.HeadPosition(yaw, pitch, roll) ){
+cout.width(5); cout << (int)yaw;
+cout.width(5); cout << (int) pitch;
+cout.width(5); cout << (int) roll;
+cout.width(5); cout << (int) (last_pitch - pitch);
+cout.width(5); cout << (int) (last_yaw - yaw);
+cout << endl;
+}	else
+    cout << "failure" << endl;
+
+renWin->Render();
 
 	double camera_position[3];
 	ren_l->GetActiveCamera()->GetPosition(camera_position);
-	camera_position[0] += 0.2;
+	camera_position[0] += 0.8;
 	ren_r->GetActiveCamera()->SetPosition(camera_position);
 
+ren_r->GetActiveCamera()->SetRoll( (double) roll  );
+ren_r->GetActiveCamera()->Yaw(  (double) yaw - last_yaw  );
+ren_r->GetActiveCamera()->Pitch((double) pitch  - last_pitch);
+
+ren_l->GetActiveCamera()->SetRoll( (double) roll  );
+ren_l->GetActiveCamera()->Yaw(  (double) yaw - last_yaw  );
+ren_l->GetActiveCamera()->Pitch((double) pitch  - last_pitch);
+
+
+last_yaw = yaw; last_pitch = pitch; last_roll = roll;
 	// double camera_focus[3];
 	// ren_l->GetActiveCamera()->GetFocalPoint(camera_focus);
 	// camera_focus[0]    += 0.1;
 	// ren_r->GetActiveCamera()->SetFocalPoint(camera_focus);
 
-   	 ren_l->GetActiveCamera()->Azimuth( 1 );
-   	 ren_r->GetActiveCamera()->Azimuth( 1 );
+//   	 ren_l->GetActiveCamera()->Azimuth( 1 );
+//   	 ren_r->GetActiveCamera()->Azimuth( 1 );
     }
 
     return 0;
