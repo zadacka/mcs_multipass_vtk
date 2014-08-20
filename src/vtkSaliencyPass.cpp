@@ -369,6 +369,7 @@ void vtkSaliencyPass::createAuxiliaryTexture(TextureInfo *&texCurrent, unsigned 
     texCurrent->texWidth = m_width *2;//+ ViewportX;
     texCurrent->texHeight = m_height + ViewportY;
 
+    if(verbose){
     cout << " m_width:  " << m_width
 	 << " m_height: " << m_height
 	 << " texW:  " << texCurrent->texWidth
@@ -376,6 +377,7 @@ void vtkSaliencyPass::createAuxiliaryTexture(TextureInfo *&texCurrent, unsigned 
 	 << " imgW:  " << texCurrent->imgWidth
 	 << " imgH:  " << texCurrent->imgHeight
 	 << endl;
+    }
 
     texCurrent->format = GL_RGB;
     texCurrent->internalFormat = GL_RGB32F_ARB;
