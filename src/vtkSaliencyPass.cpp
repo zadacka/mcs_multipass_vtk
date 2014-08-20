@@ -25,6 +25,8 @@
 #include "vtkCamera.h"
 #include "vtkMath.h"
 
+bool verbose = false;
+
 void check_uniforms(bool enabled){
     // if(enabled){  
     // 	// check that uniform locations were set
@@ -185,23 +187,25 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 	&this->ViewportX,
 	&this->ViewportY);
 
-    GLint m_viewport[4];
-    glGetIntegerv( GL_VIEWPORT, m_viewport );
-    cout << "Screen size is " 
-	 << m_viewport[0] << ", "  
-	 << m_viewport[1] << ", "  
-	 << m_viewport[2] << ", "  
-	 << m_viewport[3] << ", "  << endl;
+    if(verbose){
+	GLint m_viewport[4];
+	glGetIntegerv( GL_VIEWPORT, m_viewport );
+	cout << "Screen size is " 
+	     << m_viewport[0] << ", "  
+	     << m_viewport[1] << ", "  
+	     << m_viewport[2] << ", "  
+	     << m_viewport[3] << ", "  << endl;
 
 
-    cout << "  w: " << size[0] 
-	 << ", h: " << size[1] 
-	 << ", vw:" << this->ViewportWidth 
-	 << ", vh:" << this->ViewportHeight
-	 << ", vx:" << this->ViewportX
-	 << ", vy:" << this->ViewportY
-	 << endl;
-
+	cout << "  w: " << size[0] 
+	     << ", h: " << size[1] 
+	     << ", vw:" << this->ViewportWidth 
+	     << ", vh:" << this->ViewportHeight
+	     << ", vx:" << this->ViewportX
+	     << ", vy:" << this->ViewportY
+	     << endl;
+    }
+  
     if(this->DelegatePass!=0)
     {
 
