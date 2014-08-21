@@ -65,7 +65,7 @@ int main()
     ren_r->AddActor( coneActor );
 //    ren_r->SetBackground( 0.1, 0.2, 0.4 );
  
-   // render window
+    // render window
     double viewport_l[4] = {0.0, 0.0, 0.5, 1.0};
     double viewport_r[4] = {0.5, 0.0, 1.0, 1.0};
     vtkSmartPointer<vtkRenderWindow> renWin = vtkRenderWindow::New();
@@ -134,33 +134,36 @@ int main()
     for (int i = 0; i < 36000; ++i){
 
 //my_rift.Output();
-if( my_rift.HeadPosition(yaw, pitch, roll) ){
-cout.width(5); cout << (int)yaw;
-cout.width(5); cout << (int) pitch;
-cout.width(5); cout << (int) roll;
-cout.width(5); cout << (int) (last_pitch - pitch);
-cout.width(5); cout << (int) (last_yaw - yaw);
-cout << endl;
-}	else
-    cout << "failure" << endl;
+	if( my_rift.HeadPosition(yaw, pitch, roll) ){
+	    cout << "  y"; cout.width(5); cout << (int)yaw;
+	    cout << "  p"; cout.width(5); cout << (int) pitch;
+	    cout << "  r"; cout.width(5); cout << (int) roll;
+	    cout.width(5); cout << (int) (last_pitch - pitch);
+	    cout.width(5); cout << (int) (last_yaw - yaw);
+	    cout << endl;
+	}	else
+	    cout << "failure" << endl;
 
-renWin->Render();
+	renWin->Render();
 
 	double camera_position[3];
+	double eye_spacing = 0.8;
 	ren_l->GetActiveCamera()->GetPosition(camera_position);
-	camera_position[0] += 0.8;
+	camera_position[0] += eye_spacing / 2;
 	ren_r->GetActiveCamera()->SetPosition(camera_position);
+	camera_position[0] -= eye_spacing;
+	ren_l->GetActiveCamera()->SetPosition(camera_position);
 
-ren_r->GetActiveCamera()->SetRoll( (double) roll  );
-ren_r->GetActiveCamera()->Yaw(  (double) yaw - last_yaw  );
-ren_r->GetActiveCamera()->Pitch((double) pitch  - last_pitch);
+	// ren_r->GetActiveCamera()->SetRoll( (double) roll  );
+	ren_r->GetActiveCamera()->Yaw(  (double) yaw - last_yaw  );
+	// ren_r->GetActiveCamera()->Pitch((double) pitch  - last_pitch);
 
-ren_l->GetActiveCamera()->SetRoll( (double) roll  );
-ren_l->GetActiveCamera()->Yaw(  (double) yaw - last_yaw  );
-ren_l->GetActiveCamera()->Pitch((double) pitch  - last_pitch);
+	// ren_l->GetActiveCamera()->SetRoll( (double) roll  );
+	ren_l->GetActiveCamera()->Yaw(  (double) yaw - last_yaw  );
+	// ren_l->GetActiveCamera()->Pitch((double) pitch  - last_pitch);
 
 
-last_yaw = yaw; last_pitch = pitch; last_roll = roll;
+	last_yaw = yaw; last_pitch = pitch; last_roll = roll;
 	// double camera_focus[3];
 	// ren_l->GetActiveCamera()->GetFocalPoint(camera_focus);
 	// camera_focus[0]    += 0.1;
