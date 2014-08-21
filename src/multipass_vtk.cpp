@@ -30,11 +30,19 @@ bool use_cone = true;
 void KeypressCallbackFunction (
   vtkObject* caller,
   long unsigned int vtkNotUsed(eventId),
-  void* vtkNotUsed(clientData),
+  void* clientData,
   void* vtkNotUsed(callData) ){
 
-  // do something
-  cout << "you pressed a key!!!!" << endl;
+    vtkRenderWindowInteractor *iren =
+      static_cast<vtkRenderWindowInteractor*>(caller);
+    Rift* rift = (Rift*) clientData;
+
+    char* key = iren->GetKeySym();
+    // care! GetKeySym returns things like 'space'!
+    //    cout << "Pressed: " << key << endl;
+
+    if('r' == key[0]) rift->ResetSensor();
+
 }
 
 
@@ -46,12 +54,17 @@ public:
 	return cb;
     }
 
-    void Configure(vtkCamera* left, vtkCamera* right, vtkRenderWindow* window){
+    void Configure(
+	vtkCamera* left,
+	vtkCamera* right,
+	vtkRenderWindow* window,
+	Rift* rift_pointer
+	){
 	camera_l_ = left;
 	camera_r_ = right;
 	renderWindow_ = window;
 	last_yaw = last_pitch = last_roll = 0.0;
-
+	rift = rift_pointer;
 	double camera_position[3];
 	double eye_spacing = 0.8;
 	camera_l_->GetPosition(camera_position);
@@ -60,7 +73,7 @@ public:
 	camera_position[0] -= eye_spacing;
 	camera_l_->SetPosition(camera_position);
 
-	my_rift.ResetSensor();
+	rift->ResetSensor();
 //	double camera_focus[3];
 //	// may need to Get, Set the FocalPoint(camera_focus)
     }
@@ -72,7 +85,7 @@ public:
 	if (vtkCommand::TimerEvent == eventId){
 	    ++this->TimerCount;
 
-	    my_rift.HeadPosition(yaw, pitch, roll);
+	    rift->HeadPosition(yaw, pitch, roll);
 	    // cout << "  y"; cout.width(5); cout << (int)yaw;
 	    // cout << "  p"; cout.width(5); cout << (int) pitch;
 	    // cout << "  r"; cout.width(5); cout << (int) roll;
@@ -92,9 +105,6 @@ public:
 
 	    last_yaw = yaw; last_pitch = pitch; last_roll = roll;
 
-
-	    if(TimerCount > 600) exit(1);
-
 	    renderWindow_->Render();
 	}
     }
@@ -103,7 +113,7 @@ private:
     vtkSmartPointer<vtkCamera> camera_l_;
     vtkSmartPointer<vtkCamera> camera_r_;
     vtkSmartPointer<vtkRenderWindow> renderWindow_;
-    Rift my_rift;
+    Rift* rift;
 
     float yaw, pitch, roll;
     float last_yaw, last_pitch, last_roll;
@@ -192,6 +202,7 @@ int main()
     ren_l->SetPass(saliencyP_l);
     ren_r->SetPass(saliencyP_r);
 
+    Rift rift;
 
 // Timed interactor for HMD
     vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
@@ -205,18 +216,23 @@ int main()
     renderWindowInteractor->AddObserver(
 	vtkCommand::TimerEvent,
 	cb);
-    int timerId = renderWindowInteractor->CreateRepeatingTimer(32);
+    int timerId = renderWindowInteractor->CreateRepeatingTimer(50);
     std::cout << "timerId: " << timerId << std::endl;
 
     renWin->Render();
 
     // touching the cameras before first render stops auto-scaling
-    cb->Configure(ren_l->GetActiveCamera(), ren_r->GetActiveCamera(), renWin);
+    cb->Configure(ren_l->GetActiveCamera(),
+		  ren_r->GetActiveCamera(),
+		  renWin,
+		  &rift);
 
 // // Keypress interactor
     vtkSmartPointer<vtkCallbackCommand> keypressCallback =
 	vtkSmartPointer<vtkCallbackCommand>::New();
     keypressCallback->SetCallback ( KeypressCallbackFunction );
+    keypressCallback->SetClientData( &rift);
+
     renderWindowInteractor->AddObserver (
 	vtkCommand::KeyPressEvent,
 	keypressCallback );
