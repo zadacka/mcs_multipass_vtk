@@ -35,10 +35,10 @@ struct ClientData{
 
 
 void KeypressCallbackFunction (
-  vtkObject* caller,
-  long unsigned int vtkNotUsed(eventId),
-  void* clientData,
-  void* vtkNotUsed(callData) ){
+    vtkObject* caller,
+    long unsigned int vtkNotUsed(eventId),
+    void* clientData,
+    void* vtkNotUsed(callData) ){
 
     vtkRenderWindowInteractor *iren =
 	static_cast<vtkRenderWindowInteractor*>(caller);
