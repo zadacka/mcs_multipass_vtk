@@ -16,15 +16,11 @@
 #include "vtkSaliencyPass.h"
 #include "vtkCameraPass.h"
 #include "vtkSequencePass.h"
-#include "vtkOpaquePass.h"
 #include "vtkRenderPassCollection.h"
-#include "vtkVolumetricPass.h"
 #include "vtkDefaultPass.h"
 #include "vtkLightsPass.h"
-#include "vtkClearZPass.h"
 
-#include "vtkGenericDataObjectReader.h"
-
+#include "vtkGenericDataObjectReader.h"  // for reading btain.vtk
 #include <vtkRenderWindowInteractor.h>
 
 // for jittercube
@@ -67,6 +63,9 @@ public:
 	camera_r_->SetPosition(camera_position);
 	camera_position[0] -= eye_spacing;
 	camera_l_->SetPosition(camera_position);
+
+//	double camera_focus[3];
+//	// may need to Get, Set the FocalPoint(camera_focus)
     }
 
     virtual void Execute(vtkObject *vtkNotUsed(caller),
@@ -77,6 +76,12 @@ public:
 	    ++this->TimerCount;
 
 	    my_rift.HeadPosition(yaw, pitch, roll);
+//	    cout << "  y"; cout.width(5); cout << (int)yaw;
+//	    cout << "  p"; cout.width(5); cout << (int) pitch;
+//	    cout << "  r"; cout.width(5); cout << (int) roll;
+//	    cout.width(5); cout << (int) (last_pitch - pitch);
+//	    cout.width(5); cout << (int) (last_yaw - yaw);
+//	    cout << endl;
 
 	    // camera_r_->Azimuth(1);  camera_l_->Azimuth(1);
 
@@ -116,9 +121,9 @@ int main()
     // get source data
     if(!use_cone){
 	std::string inputFilename = "btain.vtk";
- 
+
 	// read data
-	vtkSmartPointer<vtkGenericDataObjectReader> reader = 
+	vtkSmartPointer<vtkGenericDataObjectReader> reader =
 	    vtkSmartPointer<vtkGenericDataObjectReader>::New();
 	reader->SetFileName(inputFilename.c_str());
 	reader->Update();
@@ -141,7 +146,7 @@ int main()
     vtkSmartPointer<vtkRenderer> ren_r = vtkRenderer::New();
     ren_r->AddActor( coneActor );
 //    ren_r->SetBackground( 0.1, 0.2, 0.4 );
- 
+
     // render window
     double viewport_l[4] = {0.0, 0.0, 0.5, 1.0};
     double viewport_r[4] = {0.5, 0.0, 1.0, 1.0};
@@ -149,7 +154,7 @@ int main()
 
     // size and shift window
     renWin->SetSize(1280, 800);
-    renWin->SetPosition(1680, 0); 
+    renWin->SetPosition(1680, 0);
 
     // alternative: full screen & mirror BUT sets to 1280 x 720!!
     // renWin->FullScreenOn();
@@ -197,8 +202,8 @@ int main()
     ren_r->SetPass(saliencyP_r);
 
     // // use interactor
-    // vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor = 
-    // 	vtkSmartPointer<vtkRenderWindowInteractor>::New();
+    // vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
+    //	vtkSmartPointer<vtkRenderWindowInteractor>::New();
     // renderWindowInteractor->SetRenderWindow(renWin);
 
     // // Begin mouse interaction
@@ -217,7 +222,6 @@ int main()
     int timerId = renderWindowInteractor->CreateRepeatingTimer(16);
     std::cout << "timerId: " << timerId << std::endl;
 
-    // Render and interact
     renWin->Render();
 
     // touching the cameras before first render stops auto-scaling
@@ -225,32 +229,8 @@ int main()
 
     renderWindowInteractor->Start();
 
- //    for (int i = 0; i < 36000; ++i){
-
-// //my_rift.Output();
-
-//	if( my_rift.HeadPosition(yaw, pitch, roll) ){
-//	    cout << "  y"; cout.width(5); cout << (int)yaw;
-//	    cout << "  p"; cout.width(5); cout << (int) pitch;
-//	    cout << "  r"; cout.width(5); cout << (int) roll;
-//	    cout.width(5); cout << (int) (last_pitch - pitch);
-//	    cout.width(5); cout << (int) (last_yaw - yaw);
-//	    cout << endl;
-//	}	else
-//	    cout << "failure" << endl;
 
 
-
-//	// double camera_focus[3];
-//	// ren_l->GetActiveCamera()->GetFocalPoint(camera_focus);
-//	// camera_focus[0]    += 0.1;
-//	// ren_r->GetActiveCamera()->SetFocalPoint(camera_focus);
-
-// //	 ren_l->GetActiveCamera()->Azimuth( 1 );
-// //	 ren_r->GetActiveCamera()->Azimuth( 1 );
-//     }
 
     return 0;
 }
-
-
