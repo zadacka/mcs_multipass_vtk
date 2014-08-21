@@ -39,7 +39,7 @@ void main(){
     coord = coord / vec2(2, 1) + (offset.x == 0 ? vec2(0) : vec2(0.5, 0));
     // clamp(coord, vec2(0), vec2(1)); // caused artefacts
 
-    FragColor = vec4(0);
+    FragColor = vec4(0,0,0,1);
 
     // guard against 'out of scope'
     // r-check is a *horrible* NVIDIA driver error bug-fix
