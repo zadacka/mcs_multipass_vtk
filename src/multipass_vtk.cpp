@@ -27,9 +27,86 @@
 
 #include <vtkRenderWindowInteractor.h>
 
-#include "riftclass.h"
+// for jittercube
+#include <vtkCubeSource.h>
+#include <vtkPolyData.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkMatrix4x4.h>
+#include <vtkProgrammableFilter.h>
+#include <vtkCallbackCommand.h>
+#include <vtkDataObject.h>
+#include <time.h>
+#define _USE_MATH_DEFINES
+#include <math.h>
+#include <iostream>
+#include <fstream>
+
+#include "riftclass.h"                    // for rift
 
 bool use_cone = false;
+
+
+class vtkTimerCallback : public vtkCommand{
+public:
+    static vtkTimerCallback *New(){
+	vtkTimerCallback *cb = new vtkTimerCallback;
+	cb->TimerCount = 0;
+	return cb;
+    }
+
+    void Configure(vtkCamera* left, vtkCamera* right, vtkRenderWindow* window){
+	camera_l_ = left;
+	camera_r_ = right;
+	renderWindow_ = window;
+	last_yaw = last_pitch = last_roll = 0.0;
+
+	double camera_position[3];
+	double eye_spacing = 0.8;
+	camera_l_->GetPosition(camera_position);
+	camera_position[0] += eye_spacing / 2;
+	camera_r_->SetPosition(camera_position);
+	camera_position[0] -= eye_spacing;
+	camera_l_->SetPosition(camera_position);
+    }
+
+    virtual void Execute(vtkObject *vtkNotUsed(caller),
+			 unsigned long eventId,
+			 void *vtkNotUsed(callData)){
+
+	if (vtkCommand::TimerEvent == eventId){
+	    ++this->TimerCount;
+
+	    my_rift.HeadPosition(yaw, pitch, roll);
+
+	    // camera_r_->Azimuth(1);  camera_l_->Azimuth(1);
+
+	    camera_r_->SetRoll( (double) - roll  );
+	    camera_r_->Yaw(  (double) yaw - last_yaw  );
+	    camera_r_->Pitch((double) pitch - last_pitch);
+
+	    camera_l_->SetRoll( (double) - roll  );
+	    camera_l_->Yaw(  (double) yaw - last_yaw  );
+	    camera_l_->Pitch((double) pitch - last_pitch);
+
+	    last_yaw = yaw; last_pitch = pitch; last_roll = roll;
+
+
+	    if(TimerCount > 600) exit(1);
+
+	    renderWindow_->Render();
+	}
+    }
+private:
+    int TimerCount;
+    vtkSmartPointer<vtkCamera> camera_l_;
+    vtkSmartPointer<vtkCamera> camera_r_;
+    vtkSmartPointer<vtkRenderWindow> renderWindow_;
+    Rift my_rift;
+
+    float yaw, pitch, roll;
+    float last_yaw, last_pitch, last_roll;
+
+};
 
 int main()
 {
@@ -127,51 +204,51 @@ int main()
     // // Begin mouse interaction
     // renderWindowInteractor->Start();
 
-    float yaw, pitch, roll;
-    float last_yaw, last_pitch, last_roll = 0;
-    Rift my_rift;
 
-    for (int i = 0; i < 36000; ++i){
+    vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
+	vtkSmartPointer<vtkRenderWindowInteractor>::New();
+    renderWindowInteractor->SetRenderWindow(renWin);
+    renderWindowInteractor->Initialize();
 
-//my_rift.Output();
-	if( my_rift.HeadPosition(yaw, pitch, roll) ){
-	    cout << "  y"; cout.width(5); cout << (int)yaw;
-	    cout << "  p"; cout.width(5); cout << (int) pitch;
-	    cout << "  r"; cout.width(5); cout << (int) roll;
-	    cout.width(5); cout << (int) (last_pitch - pitch);
-	    cout.width(5); cout << (int) (last_yaw - yaw);
-	    cout << endl;
-	}	else
-	    cout << "failure" << endl;
+    vtkSmartPointer<vtkTimerCallback> cb =
+	vtkSmartPointer<vtkTimerCallback>::New();
 
-	renWin->Render();
+    renderWindowInteractor->AddObserver(vtkCommand::TimerEvent, cb);
+    int timerId = renderWindowInteractor->CreateRepeatingTimer(16);
+    std::cout << "timerId: " << timerId << std::endl;
 
-	double camera_position[3];
-	double eye_spacing = 0.8;
-	ren_l->GetActiveCamera()->GetPosition(camera_position);
-	camera_position[0] += eye_spacing / 2;
-	ren_r->GetActiveCamera()->SetPosition(camera_position);
-	camera_position[0] -= eye_spacing;
-	ren_l->GetActiveCamera()->SetPosition(camera_position);
+    // Render and interact
+    renWin->Render();
 
-	// ren_r->GetActiveCamera()->SetRoll( (double) roll  );
-	ren_r->GetActiveCamera()->Yaw(  (double) yaw - last_yaw  );
-	// ren_r->GetActiveCamera()->Pitch((double) pitch  - last_pitch);
+    // touching the cameras before first render stops auto-scaling
+    cb->Configure(ren_l->GetActiveCamera(), ren_r->GetActiveCamera(), renWin);
 
-	// ren_l->GetActiveCamera()->SetRoll( (double) roll  );
-	ren_l->GetActiveCamera()->Yaw(  (double) yaw - last_yaw  );
-	// ren_l->GetActiveCamera()->Pitch((double) pitch  - last_pitch);
+    renderWindowInteractor->Start();
+
+ //    for (int i = 0; i < 36000; ++i){
+
+// //my_rift.Output();
+
+//	if( my_rift.HeadPosition(yaw, pitch, roll) ){
+//	    cout << "  y"; cout.width(5); cout << (int)yaw;
+//	    cout << "  p"; cout.width(5); cout << (int) pitch;
+//	    cout << "  r"; cout.width(5); cout << (int) roll;
+//	    cout.width(5); cout << (int) (last_pitch - pitch);
+//	    cout.width(5); cout << (int) (last_yaw - yaw);
+//	    cout << endl;
+//	}	else
+//	    cout << "failure" << endl;
 
 
-	last_yaw = yaw; last_pitch = pitch; last_roll = roll;
-	// double camera_focus[3];
-	// ren_l->GetActiveCamera()->GetFocalPoint(camera_focus);
-	// camera_focus[0]    += 0.1;
-	// ren_r->GetActiveCamera()->SetFocalPoint(camera_focus);
 
-//   	 ren_l->GetActiveCamera()->Azimuth( 1 );
-//   	 ren_r->GetActiveCamera()->Azimuth( 1 );
-    }
+//	// double camera_focus[3];
+//	// ren_l->GetActiveCamera()->GetFocalPoint(camera_focus);
+//	// camera_focus[0]    += 0.1;
+//	// ren_r->GetActiveCamera()->SetFocalPoint(camera_focus);
+
+// //	 ren_l->GetActiveCamera()->Azimuth( 1 );
+// //	 ren_r->GetActiveCamera()->Azimuth( 1 );
+//     }
 
     return 0;
 }
