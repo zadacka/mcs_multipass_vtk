@@ -64,3 +64,8 @@ bool Rift::HeadPosition(float& yaw,float& pitch,float& roll){
     ovrHmd_EndFrameTiming(hmd);
     return false;
 }
+
+void Rift::ResetSensor(){
+    // pass class member
+    ovrHmd_ResetSensor(hmd);
+}

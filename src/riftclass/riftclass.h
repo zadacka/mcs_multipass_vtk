@@ -10,7 +10,7 @@ class Rift{
     ~Rift();
     void Output();
     bool HeadPosition(float&,float&,float&);
-
+    void ResetSensor();
   private:
     ovrHmd hmd;
     ovrHmdDesc hmdDesc;
