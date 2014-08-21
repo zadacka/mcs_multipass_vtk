@@ -23,7 +23,7 @@
 #include "vtkGenericDataObjectReader.h"  // for reading btain.vtk
 #include <vtkRenderWindowInteractor.h>
 
-// for jittercube
+// for callback interactor example
 #include <vtkCubeSource.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataMapper.h>
@@ -39,7 +39,18 @@
 
 #include "riftclass.h"                    // for rift
 
-bool use_cone = false;
+bool use_cone = true;
+
+void KeypressCallbackFunction (
+  vtkObject* caller,
+  long unsigned int vtkNotUsed(eventId),
+  void* vtkNotUsed(clientData),
+  void* vtkNotUsed(callData) ){
+
+  // do something
+  cout << "you pressed a key!!!!" << endl;
+
+}
 
 
 class vtkTimerCallback : public vtkCommand{
@@ -227,10 +238,15 @@ int main()
     // touching the cameras before first render stops auto-scaling
     cb->Configure(ren_l->GetActiveCamera(), ren_r->GetActiveCamera(), renWin);
 
+// // Keypress interactor
+    vtkSmartPointer<vtkCallbackCommand> keypressCallback =
+	vtkSmartPointer<vtkCallbackCommand>::New();
+    keypressCallback->SetCallback ( KeypressCallbackFunction );
+    renderWindowInteractor->AddObserver (
+	vtkCommand::KeyPressEvent,
+	keypressCallback );
+
     renderWindowInteractor->Start();
-
-
-
 
     return 0;
 }
