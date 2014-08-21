@@ -27,6 +27,13 @@
 
 bool use_cone = true;
 
+struct ClientData{
+    Rift* rift;
+    vtkRenderer* renderer_l;
+    vtkRenderer* renderer_r;
+};
+
+
 void KeypressCallbackFunction (
   vtkObject* caller,
   long unsigned int vtkNotUsed(eventId),
@@ -34,15 +41,21 @@ void KeypressCallbackFunction (
   void* vtkNotUsed(callData) ){
 
     vtkRenderWindowInteractor *iren =
-      static_cast<vtkRenderWindowInteractor*>(caller);
-    Rift* rift = (Rift*) clientData;
+	static_cast<vtkRenderWindowInteractor*>(caller);
 
     char* key = iren->GetKeySym();
     // care! GetKeySym returns things like 'space'!
     //    cout << "Pressed: " << key << endl;
 
-    if('r' == key[0]) rift->ResetSensor();
+    if('r' == key[0]){
+// RESET CAMERAS
+	ClientData* cd = (ClientData*) clientData;
+	cd->rift->ResetSensor();
+	cd->renderer_l->ResetCamera();
+	cd->renderer_r->ResetCamera();
 
+
+    }
 }
 
 
@@ -93,18 +106,18 @@ public:
 	    // cout.width(5); cout << (int) (last_yaw - yaw);
 	    // cout << endl;
 
-	    // camera_r_->Azimuth(1);  camera_l_->Azimuth(1);
-
 	    camera_r_->SetRoll( (double) - roll  );
-	    camera_r_->Yaw(  (double) yaw - last_yaw  );
-	    camera_r_->Pitch((double) pitch - last_pitch);
-
 	    camera_l_->SetRoll( (double) - roll  );
+
+	    camera_r_->Yaw(  (double) yaw - last_yaw  );
 	    camera_l_->Yaw(  (double) yaw - last_yaw  );
+
+	    camera_r_->Pitch((double) pitch - last_pitch);
 	    camera_l_->Pitch((double) pitch - last_pitch);
 
 	    last_yaw = yaw; last_pitch = pitch; last_roll = roll;
 
+	    // camera_r_->Azimuth(1);  camera_l_->Azimuth(1);
 	    renderWindow_->Render();
 	}
     }
@@ -227,11 +240,16 @@ int main()
 		  renWin,
 		  &rift);
 
+    ClientData clientdata;
+    clientdata.rift = &rift;
+    clientdata.renderer_l = ren_l;
+    clientdata.renderer_r = ren_r;
+
 // // Keypress interactor
     vtkSmartPointer<vtkCallbackCommand> keypressCallback =
 	vtkSmartPointer<vtkCallbackCommand>::New();
     keypressCallback->SetCallback ( KeypressCallbackFunction );
-    keypressCallback->SetClientData( &rift);
+    keypressCallback->SetClientData( &clientdata);
 
     renderWindowInteractor->AddObserver (
 	vtkCommand::KeyPressEvent,
