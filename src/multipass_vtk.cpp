@@ -6,9 +6,6 @@
 #include "vtkCamera.h"
 #include "vtkActor.h"
 #include "vtkRenderer.h"
-#include "vtkShader2.h"
-#include "vtkShaderProgram2.h"
-#include "vtkShader2Collection.h"
 #include "vtkSmartPointer.h"
 #include "vtkOpenGLRenderWindow.h"
 #include "vtkOpenGLProperty.h"
@@ -21,21 +18,10 @@
 #include "vtkLightsPass.h"
 
 #include "vtkGenericDataObjectReader.h"  // for reading btain.vtk
-#include <vtkRenderWindowInteractor.h>
 
-// for callback interactor example
-#include <vtkCubeSource.h>
-#include <vtkPolyData.h>
-#include <vtkPolyDataMapper.h>
-#include <vtkMatrix4x4.h>
-#include <vtkProgrammableFilter.h>
-#include <vtkCallbackCommand.h>
-#include <vtkDataObject.h>
+#include <vtkRenderWindowInteractor.h>   // for interactor
+#include <vtkCallbackCommand.h>          // for callbacks
 #include <time.h>
-#define _USE_MATH_DEFINES
-#include <math.h>
-#include <iostream>
-#include <fstream>
 
 #include "riftclass.h"                    // for rift
 
@@ -49,7 +35,6 @@ void KeypressCallbackFunction (
 
   // do something
   cout << "you pressed a key!!!!" << endl;
-
 }
 
 
