@@ -75,6 +75,7 @@ public:
 	camera_position[0] -= eye_spacing;
 	camera_l_->SetPosition(camera_position);
 
+	my_rift.ResetSensor();
 //	double camera_focus[3];
 //	// may need to Get, Set the FocalPoint(camera_focus)
     }
@@ -87,12 +88,12 @@ public:
 	    ++this->TimerCount;
 
 	    my_rift.HeadPosition(yaw, pitch, roll);
-//	    cout << "  y"; cout.width(5); cout << (int)yaw;
-//	    cout << "  p"; cout.width(5); cout << (int) pitch;
-//	    cout << "  r"; cout.width(5); cout << (int) roll;
-//	    cout.width(5); cout << (int) (last_pitch - pitch);
-//	    cout.width(5); cout << (int) (last_yaw - yaw);
-//	    cout << endl;
+	    // cout << "  y"; cout.width(5); cout << (int)yaw;
+	    // cout << "  p"; cout.width(5); cout << (int) pitch;
+	    // cout << "  r"; cout.width(5); cout << (int) roll;
+	    // cout.width(5); cout << (int) (last_pitch - pitch);
+	    // cout.width(5); cout << (int) (last_yaw - yaw);
+	    // cout << endl;
 
 	    // camera_r_->Azimuth(1);  camera_l_->Azimuth(1);
 
@@ -174,12 +175,6 @@ int main()
     renWin->AddRenderer(ren_r); ren_r->SetViewport(viewport_r);
 
 
-    // Multipass Render
-    // ////////////////////////
-    // vtkOpaquePass *opaque=vtkOpaquePass::New();
-    // vtkVolumetricPass *volume=vtkVolumetricPass::New();
-    // vtkClearZPass* clearz=vtkClearZPass::New();
-
     // left
     vtkDefaultPass* defal_l=vtkDefaultPass::New();
     vtkLightsPass* lights_l=vtkLightsPass::New();
@@ -212,15 +207,8 @@ int main()
     ren_l->SetPass(saliencyP_l);
     ren_r->SetPass(saliencyP_r);
 
-    // // use interactor
-    // vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
-    //	vtkSmartPointer<vtkRenderWindowInteractor>::New();
-    // renderWindowInteractor->SetRenderWindow(renWin);
 
-    // // Begin mouse interaction
-    // renderWindowInteractor->Start();
-
-
+// Timed interactor for HMD
     vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
 	vtkSmartPointer<vtkRenderWindowInteractor>::New();
     renderWindowInteractor->SetRenderWindow(renWin);
@@ -229,8 +217,10 @@ int main()
     vtkSmartPointer<vtkTimerCallback> cb =
 	vtkSmartPointer<vtkTimerCallback>::New();
 
-    renderWindowInteractor->AddObserver(vtkCommand::TimerEvent, cb);
-    int timerId = renderWindowInteractor->CreateRepeatingTimer(16);
+    renderWindowInteractor->AddObserver(
+	vtkCommand::TimerEvent,
+	cb);
+    int timerId = renderWindowInteractor->CreateRepeatingTimer(32);
     std::cout << "timerId: " << timerId << std::endl;
 
     renWin->Render();
