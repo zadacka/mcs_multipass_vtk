@@ -45,17 +45,23 @@ void KeypressCallbackFunction (
 
     char* key = iren->GetKeySym();
     // care! GetKeySym returns things like 'space'!
-    //    cout << "Pressed: " << key << endl;
+    cout << "Pressed: " << key << endl;
+
+    ClientData* cd = (ClientData*) clientData;
 
     if('r' == key[0]){
 // RESET CAMERAS
-	ClientData* cd = (ClientData*) clientData;
 	cd->rift->ResetSensor();
 	cd->renderer_l->ResetCamera();
 	cd->renderer_r->ResetCamera();
-
-
     }
+
+    if( 0 == strcmp("KP_Add", (const char*) key))
+	cd->renderer_r->GetActiveCamera()->Dolly(1.1);
+
+    if( 0 == strcmp("KP_Subtract", (const char*) key))
+	cd->renderer_r->GetActiveCamera()->Dolly(0.9);
+
 }
 
 
