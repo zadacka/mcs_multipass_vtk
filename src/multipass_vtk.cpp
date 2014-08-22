@@ -56,14 +56,36 @@ void KeypressCallbackFunction (
 	cd->renderer_r->ResetCamera();
     }
 
-    if( 0 == strcmp("KP_Add", (const char*) key))
+    if( 0 == strcmp("KP_Add", (const char*) key)){
 	cd->renderer_r->GetActiveCamera()->Dolly(1.1);
-
-    if( 0 == strcmp("KP_Subtract", (const char*) key))
+	cd->renderer_l->GetActiveCamera()->Dolly(1.1);
+    }
+    if( 0 == strcmp("KP_Subtract", (const char*) key)){
 	cd->renderer_r->GetActiveCamera()->Dolly(0.9);
+	cd->renderer_l->GetActiveCamera()->Dolly(0.9);
+    }
+
+    if( 0 == strcmp("Left", (const char*) key)){
+	cd->renderer_r->GetActiveCamera()->Azimuth(1);
+	cd->renderer_l->GetActiveCamera()->Azimuth(1);
+    }
+
+    if( 0 == strcmp("Right", (const char*) key)){
+	cd->renderer_r->GetActiveCamera()->Azimuth(-1);
+	cd->renderer_l->GetActiveCamera()->Azimuth(-1);
+    }
+
+    if( 0 == strcmp("Up", (const char*) key)){
+	cd->renderer_r->GetActiveCamera()->Elevation(1);
+	cd->renderer_l->GetActiveCamera()->Elevation(1);
+    }
+
+    if( 0 == strcmp("Down", (const char*) key)){
+	cd->renderer_r->GetActiveCamera()->Elevation(-1);
+	cd->renderer_l->GetActiveCamera()->Elevation(-1);
+    }
 
 }
-
 
 class vtkTimerCallback : public vtkCommand{
 public:
