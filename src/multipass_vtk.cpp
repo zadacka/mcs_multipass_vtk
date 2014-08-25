@@ -336,7 +336,7 @@ int main()
     renderWindowInteractor->AddObserver(
 	vtkCommand::TimerEvent,
 	cb);
-    int timerId = renderWindowInteractor->CreateRepeatingTimer(50);
+    int timerId = renderWindowInteractor->CreateRepeatingTimer(16);
     std::cout << "timerId: " << timerId << std::endl;
 
     renWin->Render();
