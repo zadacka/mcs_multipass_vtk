@@ -25,6 +25,21 @@
 
 #include "riftclass.h"                    // for rift
 
+#include <time.h>
+
+timespec diff(timespec start, timespec end){
+    timespec difference;
+    if ((end.tv_nsec-start.tv_nsec)<0) {
+	difference.tv_sec = end.tv_sec-start.tv_sec-1;
+	difference.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
+    } else {
+	difference.tv_sec = end.tv_sec-start.tv_sec;
+	difference.tv_nsec = end.tv_nsec-start.tv_nsec;
+    }
+    return difference;
+}
+
+bool print_times = false;
 bool use_cone = true;
 
 struct ClientData{
@@ -126,6 +141,9 @@ public:
 	if (vtkCommand::TimerEvent == eventId){
 	    ++this->TimerCount;
 
+	    timespec tick, tock;
+	    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tick);
+
 	    rift->HeadPosition(yaw, pitch, roll);
 	    // cout << "  y"; cout.width(5); cout << (int)yaw;
 	    // cout << "  p"; cout.width(5); cout << (int) pitch;
@@ -146,7 +164,17 @@ public:
 	    last_yaw = yaw; last_pitch = pitch; last_roll = roll;
 
 	    // camera_r_->Azimuth(1);  camera_l_->Azimuth(1);
+
+
 	    renderWindow_->Render();
+
+	    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tock);
+	    float miliseconds = 1000.0 * diff(tick,tock).tv_sec
+		+ diff(tick,tock).tv_nsec / 1000000.0;
+	    if(print_times){
+		cout << "Render time: "
+		     << setprecision(3) << miliseconds << endl;
+	    }
 	}
     }
 private:
