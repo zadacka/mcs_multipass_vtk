@@ -66,9 +66,30 @@ void KeypressCallbackFunction (
 
     if('r' == key[0]){
 // RESET CAMERAS
-	cd->rift->ResetSensor();
+
+	double eye_spacing = 0.4;
+
 	cd->renderer_l->ResetCamera();
 	cd->renderer_r->ResetCamera();
+	// resets a bunch of things, inc. position
+
+	// adjust camera positions for stereo
+	double camera_position[3];
+	cd->renderer_l->GetActiveCamera()->GetPosition(camera_position);
+	camera_position[0] -= eye_spacing / 2;
+	cd->renderer_l->GetActiveCamera()->SetPosition(camera_position);
+	camera_position[0] += eye_spacing;
+	cd->renderer_r->GetActiveCamera()->SetPosition(camera_position);
+
+	// cd->renderer_l->GetActiveCamera()->SetRoll(0);
+	// cd->renderer_r->GetActiveCamera()->SetRoll(0);
+
+	//last_yaw = last_pitch = last_roll = 0; // doesn't work
+	cd->rift->ResetSensor();
+    }
+
+    if('p' == key[0]){
+	print_times = !print_times;
     }
 
     if( 0 == strcmp("KP_Add", (const char*) key)){
