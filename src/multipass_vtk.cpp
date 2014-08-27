@@ -251,27 +251,47 @@ private:
 
 };
 
-int main()
+int main(int argc, char *argv[] )
 {
+    bool use_cone = false; // let's be optimistic, eh?
+    if ( argc == 1 ){
+	cout<<"No .vtk input specified, use default cone source." << endl;
+	use_cone = true;
+    }
+    else {
+	ifstream the_file ( argv[1] );
+	// Always check to see if file opening succeeded
+	if ( !the_file.is_open() ){
+	    cout<<"Could not open file, use default cone source." << endl;
+	    use_cone = true;
+	}
+	// the_file is closed implicitly here
+    }
+
     // mapper, defined outside if statement
     vtkSmartPointer<vtkPolyDataMapper> coneMapper = vtkPolyDataMapper::New();
 
     // get source data
     if(!use_cone){
-	std::string inputFilename = "btain.vtk";
+	std::string inputFilename = argv[1]; 
+        // candidates: CCtracts.vtk btain.vtk def1.bnd.vtk FullBrain.vtk
 
 	// read data
 	vtkSmartPointer<vtkGenericDataObjectReader> reader =
 	    vtkSmartPointer<vtkGenericDataObjectReader>::New();
 	reader->SetFileName(inputFilename.c_str());
 	reader->Update();
+
 	// polydata
 	vtkSmartPointer<vtkPolyData> output = reader->GetPolyDataOutput();
 	coneMapper->SetInputConnection(output->GetProducerPort());
+
     } else{
 	vtkSmartPointer<vtkConeSource> cone = vtkConeSource::New();
 	coneMapper->SetInputConnection( cone->GetOutputPort() );
     }
+
+
 
     // actor
     vtkSmartPointer<vtkActor> coneActor = vtkActor::New();
@@ -280,10 +300,26 @@ int main()
     // renderer
     vtkSmartPointer<vtkRenderer> ren_l = vtkRenderer::New();
     ren_l->AddActor( coneActor );
-//    ren_l->SetBackground( 0.1, 0.2, 0.4 );
     vtkSmartPointer<vtkRenderer> ren_r = vtkRenderer::New();
     ren_r->AddActor( coneActor );
-//    ren_r->SetBackground( 0.1, 0.2, 0.4 );
+    // renderer->SetBackground( 0.1, 0.2, 0.4 );
+
+
+    if(!use_cone && argc == 3){
+	vtkSmartPointer<vtkPolyDataMapper> coneMapper2 = vtkPolyDataMapper::New();
+	vtkSmartPointer<vtkGenericDataObjectReader> reader2 =
+	    vtkSmartPointer<vtkGenericDataObjectReader>::New();
+	reader2->SetFileName("FullBrain2.vtk");
+	reader2->Update();
+	// polydata
+	vtkSmartPointer<vtkPolyData> output2 = reader2->GetPolyDataOutput();
+	coneMapper2->SetInputConnection(output2->GetProducerPort());
+	vtkSmartPointer<vtkActor> coneActor2 = vtkActor::New();
+	coneActor2->SetMapper( coneMapper2 );
+
+	ren_l->AddActor( coneActor2 );
+	ren_r->AddActor( coneActor2 );
+    }
 
     // render window
     double viewport_l[4] = {0.0, 0.0, 0.5, 1.0};
