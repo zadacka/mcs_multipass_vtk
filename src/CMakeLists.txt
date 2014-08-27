@@ -130,7 +130,10 @@ configure_file(../resources/Distortion.vs Distortion.vs COPYONLY)
 configure_file(../resources/simple.fs simple.fs COPYONLY)
 configure_file(../resources/simple.vs simple.vs COPYONLY)
 
-configure_file(../resources/btain.vtk btain.vtk COPYONLY)
+configure_file(../resources/btain.vtk      btain.vtk      COPYONLY)
+configure_file(../resources/CCtracts.vtk   CCtracts.vtk   COPYONLY)
+configure_file(../resources/FullBrain.vtk  FullBrain.vtk  COPYONLY)
+configure_file(../resources/FullBrain2.vtk FullBrain2.vtk COPYONLY)
 
 #configure_file(../resources/vtkOVRPostShaderFull_fs.glsl 
 #  vtkOVRPostShaderFull_fs.glsl COPYONLY)
