@@ -40,7 +40,7 @@ timespec diff(timespec start, timespec end){
 }
 
 bool print_times = false;
-bool use_cone = true;
+
 
 // used for keypress callback
 struct ClientData{
@@ -49,15 +49,15 @@ struct ClientData{
     vtkRenderer* renderer_r;
 };
 
-static void CameraModifiedCallback ( vtkObject* caller, long unsigned int eventId,
-          void* clientData, void* callData );
+// static void CameraModifiedCallback ( vtkObject* caller, long unsigned int eventId,
+//           void* clientData, void* callData );
 
-// used for mouse callback
-struct clientDataMouse{
-    vtkCamera* camera;
-    long unsigned int observerID;
-    vtkCallbackCommand* observer;
-};
+// // used for mouse callback
+// struct clientDataMouse{
+//     vtkCamera* camera;
+//     long unsigned int observerID;
+//     vtkCallbackCommand* observer;
+// };
 
 
 void KeypressCallbackFunction (
@@ -364,34 +364,34 @@ int main()
     clientdata.renderer_r = ren_r;
 
 
-    vtkSmartPointer<vtkCallbackCommand> observer1 = 
-	vtkSmartPointer<vtkCallbackCommand>::New();
-    observer1->SetCallback (CameraModifiedCallback);
-    clientDataMouse clientData1;
+    // vtkSmartPointer<vtkCallbackCommand> observer1 = 
+    // 	vtkSmartPointer<vtkCallbackCommand>::New();
+    // observer1->SetCallback (CameraModifiedCallback);
+    // clientDataMouse clientData1;
 
-    vtkSmartPointer<vtkCallbackCommand> observer2 = 
-	vtkSmartPointer<vtkCallbackCommand>::New();
-    observer2->SetCallback (CameraModifiedCallback);
-    clientDataMouse clientData2;
+    // vtkSmartPointer<vtkCallbackCommand> observer2 = 
+    // 	vtkSmartPointer<vtkCallbackCommand>::New();
+    // observer2->SetCallback (CameraModifiedCallback);
+    // clientDataMouse clientData2;
 
-    long unsigned int observerID;
-    observerID = ren_l->GetActiveCamera()->AddObserver(
-	vtkCommand::ModifiedEvent, observer1);
-    clientData1.observerID = observerID;
+    // long unsigned int observerID;
+    // observerID = ren_l->GetActiveCamera()->AddObserver(
+    // 	vtkCommand::ModifiedEvent, observer1);
+    // clientData1.observerID = observerID;
 
-    observerID = ren_r->GetActiveCamera()->AddObserver( // TODO: set observer ID
-	vtkCommand::ModifiedEvent, observer2);
-    clientData2.observerID = observerID;
+    // observerID = ren_r->GetActiveCamera()->AddObserver( // TODO: set observer ID
+    // 	vtkCommand::ModifiedEvent, observer2);
+    // clientData2.observerID = observerID;
 
-    clientData1.camera = ren_r->GetActiveCamera();
-    clientData1.observer = observer2;
+    // clientData1.camera = ren_r->GetActiveCamera();
+    // clientData1.observer = observer2;
 
-    clientData2.camera = ren_l->GetActiveCamera();
-    clientData2.observer = observer1;
+    // clientData2.camera = ren_l->GetActiveCamera();
+    // clientData2.observer = observer1;
 
-    observer1->SetClientData(&clientData1); // know what the other camera is!
+    // observer1->SetClientData(&clientData1); // know what the other camera is!
 
-    observer2->SetClientData(&clientData2); // know what the other camera is!
+    // observer2->SetClientData(&clientData2); // know what the other camera is!
 
 
 
@@ -411,21 +411,21 @@ int main()
 }
 
 
-static void CameraModifiedCallback(vtkObject* caller,
-                                   long unsigned int observerID,
-                                   void* clientDataIn,
-				   void* vtkNotUsed(callData) )
-{
-    long unsigned int tempObserverID; 
-    clientDataMouse* data = static_cast<clientDataMouse*>(clientDataIn);
+// static void CameraModifiedCallback(vtkObject* caller,
+//                                    long unsigned int observerID,
+//                                    void* clientDataIn,
+// 				   void* vtkNotUsed(callData) )
+// {
+//     long unsigned int tempObserverID; 
+//     clientDataMouse* data = static_cast<clientDataMouse*>(clientDataIn);
 
-    vtkCamera* camera = static_cast<vtkCamera*>(caller);
-    vtkCamera* camera2 = data->camera;
+//     vtkCamera* camera = static_cast<vtkCamera*>(caller);
+//     vtkCamera* camera2 = data->camera;
 
-    camera2->RemoveObserver(data->observerID);
-    camera2->SetPosition(camera->GetPosition());
-    camera2->SetFocalPoint(camera->GetFocalPoint());
-    camera2->SetViewUp(camera->GetViewUp());
-    tempObserverID = camera2->AddObserver(vtkCommand::ModifiedEvent, data->observer);
-    data->observerID = tempObserverID;
-}
+//     camera2->RemoveObserver(data->observerID);
+//     camera2->SetPosition(camera->GetPosition());
+//     camera2->SetFocalPoint(camera->GetFocalPoint());
+//     camera2->SetViewUp(camera->GetViewUp());
+//     tempObserverID = camera2->AddObserver(vtkCommand::ModifiedEvent, data->observer);
+//     data->observerID = tempObserverID;
+// }
