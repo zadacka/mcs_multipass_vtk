@@ -151,10 +151,10 @@ void KeypressCallbackFunction (
 	double camera_r_position[3];
 	cd->renderer_l->GetActiveCamera()->GetPosition(camera_l_position);
 	cd->renderer_r->GetActiveCamera()->GetPosition(camera_r_position);
-	if(camera_l_position[0] < camera_r_position[0]){ // don't invert eyes
+//	if(camera_l_position[0] < camera_r_position[0]){ // don't invert eyes
 	    camera_l_position[0] += 0.1;
 	    camera_r_position[0] -= 0.1;
-	}
+//	}
 	cd->renderer_l->GetActiveCamera()->SetPosition(camera_l_position);
 	cd->renderer_r->GetActiveCamera()->SetPosition(camera_r_position);
 
