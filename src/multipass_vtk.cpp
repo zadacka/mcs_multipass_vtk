@@ -371,7 +371,7 @@ int main(int argc, char *argv[] )
 
     Rift rift;
 
-// Timed interactor for HMD
+    // Timed interactor for HMD
     vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
 	vtkSmartPointer<vtkRenderWindowInteractor>::New();
     renderWindowInteractor->SetRenderWindow(renWin);
