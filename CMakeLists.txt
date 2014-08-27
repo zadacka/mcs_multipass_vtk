@@ -1,6 +1,10 @@
 project(multipass_project)
 cmake_minimum_required(VERSION 2.8)
 
+# Set up dashboard and testing
+include(CTest)
+enable_testing()
+include(${CMAKE_CURRENT_SOURCE_DIR}/CTestConfig.cmake)
 
 # Comment out to disable the debug build
 set(CMAKE_BUILD_TYPE DEBUG)
