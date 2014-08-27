@@ -102,10 +102,25 @@ target_link_libraries(${EXE} ${VTK_LIBRARIES} ${GLEW_LIBRARY})
 #add_executable(${EXE} ${SOURCES})
 #target_link_libraries(${EXE} ${VTK_LIBRARIES} ${GLEW_LIBRARY} )
 #
+
+
+
 ####################
-####################
+# Make brain
 ####################
 
+set(EXE cone)
+set(SOURCES 
+  cone.cpp
+)
+add_executable(${EXE} ${SOURCES})
+target_link_libraries(${EXE} ${VTK_LIBRARIES} ${GLEW_LIBRARY})
+
+add_test( test_cone cone )
+
+####################
+####################
+####################
 
 message(STATUS "OpenGL library: " ${OPENGL_LIBRARIES})
 message(STATUS "Glew library: " ${GLEW_LIBRARY})
