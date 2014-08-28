@@ -75,7 +75,7 @@ void KeypressCallbackFunction (
 
     ClientData* cd = (ClientData*) clientData;
 
-    if('r' == key[0]){
+    if( 0 == strcmp("space", (const char*) key)){
 // RESET CAMERAS
 
 	double eye_spacing = 0.4;
