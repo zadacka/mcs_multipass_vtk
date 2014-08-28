@@ -47,6 +47,8 @@ struct ClientData{
     Rift* rift;
     vtkRenderer* renderer_l;
     vtkRenderer* renderer_r;
+    vtkSaliencyPass* pass_l;
+    vtkSaliencyPass* pass_r;
 };
 
 // static void CameraModifiedCallback ( vtkObject* caller, long unsigned int eventId,
@@ -101,6 +103,11 @@ void KeypressCallbackFunction (
 
     if('p' == key[0]){
 	print_times = !print_times;
+    }
+
+    if('r' == key[0]){
+	cd->pass_l->Resize();
+	cd->pass_r->Resize();
     }
 
     if( 0 == strcmp("KP_Add", (const char*) key)){
@@ -398,6 +405,8 @@ int main(int argc, char *argv[] )
     clientdata.rift = &rift;
     clientdata.renderer_l = ren_l;
     clientdata.renderer_r = ren_r;
+    clientdata.pass_l = saliencyP_l;
+    clientdata.pass_r = saliencyP_r;
 
 
     // vtkSmartPointer<vtkCallbackCommand> observer1 = 

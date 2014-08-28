@@ -69,6 +69,7 @@ public:
   // resources.
   // \pre w_exists: w!=0
   void ReleaseGraphicsResources(vtkWindow *w);
+  void Resize();
 
 protected:
   // Description:

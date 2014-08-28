@@ -113,6 +113,33 @@ vtkSaliencyPass::vtkSaliencyPass()
 // ----------------------------------------------------------------------------
 vtkSaliencyPass::~vtkSaliencyPass(){}
 
+void vtkSaliencyPass::Resize(){
+
+
+    int temp_m_width  = m_width;
+    int temp_m_height = m_height;
+
+    m_width = m_height = 10;
+
+//    cout << "m_old_width was" << m_old_width << "m_width was" << m_width << endl;
+
+    createAuxiliaryTexture(
+	texRender, GENERATE_FBO, true );
+    //createAuxiliaryTexture(
+//	texShaded, GENERATE_FBO, true);
+
+    glFlush();
+
+    m_width  = temp_m_width;
+    m_height = temp_m_height;
+
+    createAuxiliaryTexture(
+	texRender, /*GENERATE_MIPMAPS | INTERPOLATED |*/ GENERATE_FBO, true );
+    // createAuxiliaryTexture(
+//	texShaded, GENERATE_MIPMAPS | INTERPOLATED | GENERATE_FBO, true);
+
+}
+
 // ----------------------------------------------------------------------------
 void vtkSaliencyPass::init()
 {
@@ -360,8 +387,8 @@ void vtkSaliencyPass::createAuxiliaryTexture(TextureInfo *&texCurrent, unsigned 
 	glDeleteTextures(1,&texCurrent->id);
 
     if(!resize)
-	texCurrent = new TextureInfo;
-
+	texCurrent = new TextureInfo; // TODO: match this with a delete
+    
     // glActiveTexture(GL_TEXTURE0 + 1);
 
     texCurrent->imgWidth = m_width *2;//+ ViewportX;
@@ -430,9 +457,9 @@ void vtkSaliencyPass::createAuxiliaryTexture(TextureInfo *&texCurrent, unsigned 
 
     if (flags&GENERATE_FBO)
     {
-	if(!resize)
-	    texCurrent->fbo = new FramebufferObject;
-	texCurrent->rbo = new Renderbuffer;
+//	if(!resize)
+	texCurrent->fbo = new FramebufferObject; // TODO: match this with a delete
+	texCurrent->rbo = new Renderbuffer; // TODO: match this with a delete
 	texCurrent->rbo->Set( 
 	    GL_DEPTH_COMPONENT24, texCurrent->texWidth, texCurrent->texHeight );
 	texCurrent->fbo->Bind();
