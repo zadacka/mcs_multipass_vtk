@@ -43,22 +43,22 @@ set(OVR_LIBRARIES
 )
 
 ####################
-# Make multipass_vtk
+# Make main
 ####################
-set(EXE multipass_vtk)
+set(EXE main)
 
 # include_directories()
 
 set(SOURCES
-  multipass_vtk.cpp 
-  vtkSaliencyPass.cpp 
+  main.cpp 
+  vtkRiftRenderPass.cpp 
   fbo/renderbuffer.cpp
   fbo/framebufferObject.cpp
   fbo/glErrorUtil.cpp
   glsl/glinfo.cpp
   glsl/glsl.cpp
   glsl/glutils.cpp
-  vtkSaliencyPass.h
+  vtkRiftRenderPass.h
   riftclass/riftclass.h
   riftclass/riftclass.cxx
 )
@@ -74,53 +74,6 @@ target_link_libraries(
 )
 
 ####################
-# Make brain
-####################
-
-set(EXE brain)
-set(SOURCES 
-  brain.cpp
-)
-add_executable(${EXE} ${SOURCES})
-target_link_libraries(${EXE} ${VTK_LIBRARIES} ${GLEW_LIBRARY})
-
-####################
-# Make paraview_port
-####################
-#
-#
-#set(SOURCES 
-#  paraview_port.cpp
-#  paraview_port/vtkOVRCamera.cxx    
-#  paraview_port/vtkOVRPostPass.h
-#  paraview_port/vtkDualStereoPass.cxx  
-#  paraview_port/vtkOVRCamera.h      
-#  paraview_port/vtkDualStereoPass.h    
-#  paraview_port/vtkOVRPostPass.cxx  
-#
-#)
-#add_executable(${EXE} ${SOURCES})
-#target_link_libraries(${EXE} ${VTK_LIBRARIES} ${GLEW_LIBRARY} )
-#
-
-
-
-####################
-# Make brain
-####################
-
-set(EXE cone)
-set(SOURCES 
-  cone.cpp
-)
-add_executable(${EXE} ${SOURCES})
-target_link_libraries(${EXE} ${VTK_LIBRARIES} ${GLEW_LIBRARY})
-
-add_test( test_cone cone )
-
-####################
-####################
-####################
 
 message(STATUS "OpenGL library: " ${OPENGL_LIBRARIES})
 message(STATUS "Glew library: " ${GLEW_LIBRARY})
@@ -134,9 +87,3 @@ configure_file(../resources/btain.vtk      btain.vtk      COPYONLY)
 configure_file(../resources/CCtracts.vtk   CCtracts.vtk   COPYONLY)
 configure_file(../resources/FullBrain.vtk  FullBrain.vtk  COPYONLY)
 configure_file(../resources/FullBrain2.vtk FullBrain2.vtk COPYONLY)
-
-#configure_file(../resources/vtkOVRPostShaderFull_fs.glsl 
-#  vtkOVRPostShaderFull_fs.glsl COPYONLY)
-#configure_file(../resources/vtkOVRPostShaderSimple_fs.glsl
-#  vtkOVRPostShaderFull_fs.glsl COPYONLY)
-

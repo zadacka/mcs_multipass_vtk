@@ -10,7 +10,7 @@
 #include "vtkOpenGLRenderWindow.h"
 #include "vtkOpenGLProperty.h"
 
-#include "vtkSaliencyPass.h"
+#include "vtkRiftRenderPass.h"
 #include "vtkCameraPass.h"
 #include "vtkSequencePass.h"
 #include "vtkRenderPassCollection.h"
@@ -47,8 +47,8 @@ struct ClientData{
     Rift* rift;
     vtkRenderer* renderer_l;
     vtkRenderer* renderer_r;
-    vtkSaliencyPass* pass_l;
-    vtkSaliencyPass* pass_r;
+    vtkRiftRenderPass* pass_l;
+    vtkRiftRenderPass* pass_r;
 };
 
 // static void CameraModifiedCallback ( vtkObject* caller, long unsigned int eventId,
@@ -355,7 +355,7 @@ int main(int argc, char *argv[] )
     seq_l->SetPasses(passes_l);
     vtkCameraPass *cameraP_l=vtkCameraPass::New();
     cameraP_l->SetDelegatePass(seq_l);
-    vtkSaliencyPass* saliencyP_l = vtkSaliencyPass::New();
+    vtkRiftRenderPass* saliencyP_l = vtkRiftRenderPass::New();
     saliencyP_l->SetDelegatePass(cameraP_l);
 
 
@@ -369,7 +369,7 @@ int main(int argc, char *argv[] )
     seq_r->SetPasses(passes_r);
     vtkCameraPass *cameraP_r=vtkCameraPass::New();
     cameraP_r->SetDelegatePass(seq_r);
-    vtkSaliencyPass* saliencyP_r = vtkSaliencyPass::New();
+    vtkRiftRenderPass* saliencyP_r = vtkRiftRenderPass::New();
     saliencyP_r->SetDelegatePass(cameraP_r);
 
 

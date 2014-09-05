@@ -1,4 +1,4 @@
-#include "vtkSaliencyPass.h"
+#include "vtkRiftRenderPass.h"
 #include "vtkObjectFactory.h"
 #include <assert.h>
 #include "vtkRenderState.h"
@@ -14,7 +14,7 @@
 #include "vtkTextureUnitManager.h"
 
 // to be able to dump intermediate passes into png files for debugging.
-// only for vtkSaliencyPass developers.
+// only for vtkRiftRenderPass developers.
 //#define VTK_GAUSSIAN_BLUR_PASS_DEBUG
 
 #include "vtkPNGWriter.h"
@@ -71,8 +71,8 @@ void printMatrix(float matrix[16], std::string name = "matrix"){
     std::cout << std::endl;
 }
 
-vtkCxxRevisionMacro(vtkSaliencyPass, "$Revision: 1.9 $");
-vtkStandardNewMacro(vtkSaliencyPass);
+vtkCxxRevisionMacro(vtkRiftRenderPass, "$Revision: 1.9 $");
+vtkStandardNewMacro(vtkRiftRenderPass);
 
 #include <stdlib.h>
 
@@ -100,7 +100,7 @@ static char* readFile(const char *fileName) {
 }
 
 // ----------------------------------------------------------------------------
-vtkSaliencyPass::vtkSaliencyPass()
+vtkRiftRenderPass::vtkRiftRenderPass()
 {
     this->Supported=false;
     this->SupportProbed=false;
@@ -111,9 +111,9 @@ vtkSaliencyPass::vtkSaliencyPass()
 }
 
 // ----------------------------------------------------------------------------
-vtkSaliencyPass::~vtkSaliencyPass(){}
+vtkRiftRenderPass::~vtkRiftRenderPass(){}
 
-void vtkSaliencyPass::Resize(){
+void vtkRiftRenderPass::Resize(){
 
 
     int temp_m_width  = m_width;
@@ -141,7 +141,7 @@ void vtkSaliencyPass::Resize(){
 }
 
 // ----------------------------------------------------------------------------
-void vtkSaliencyPass::init()
+void vtkRiftRenderPass::init()
 {
     if(this->isInit)
 	return;
@@ -191,12 +191,12 @@ void vtkSaliencyPass::init()
 
 
 // ----------------------------------------------------------------------------
-void vtkSaliencyPass::PrintSelf(ostream& os, vtkIndent indent)
+void vtkRiftRenderPass::PrintSelf(ostream& os, vtkIndent indent)
 {
     this->Superclass::PrintSelf(os,indent);
 }
 
-void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
+void vtkRiftRenderPass::showRiftRender(const vtkRenderState *s)
 {
 
     assert("pre: s_exists" && s!=0);
@@ -363,9 +363,9 @@ void vtkSaliencyPass::showSaliency(const vtkRenderState *s)
 // Description:
 // Perform rendering according to a render state \p s.
 // \pre s_exists: s!=0
-void vtkSaliencyPass::Render(const vtkRenderState *s)
+void vtkRiftRenderPass::Render(const vtkRenderState *s)
 {
-    showSaliency(s);
+    showRiftRender(s);
 }
 
 // ----------------------------------------------------------------------------
@@ -373,7 +373,7 @@ void vtkSaliencyPass::Render(const vtkRenderState *s)
 // Release graphics resources and ask components to release their own
 // resources.
 // \pre w_exists: w!=0
-void vtkSaliencyPass::ReleaseGraphicsResources(vtkWindow *w)
+void vtkRiftRenderPass::ReleaseGraphicsResources(vtkWindow *w)
 {
     assert("pre: w_exists" && w!=0);
 
@@ -381,7 +381,7 @@ void vtkSaliencyPass::ReleaseGraphicsResources(vtkWindow *w)
 
 }
 
-void vtkSaliencyPass::createAuxiliaryTexture(TextureInfo *&texCurrent, unsigned char flags, bool resize)
+void vtkRiftRenderPass::createAuxiliaryTexture(TextureInfo *&texCurrent, unsigned char flags, bool resize)
 {
     if(resize)
 	glDeleteTextures(1,&texCurrent->id);

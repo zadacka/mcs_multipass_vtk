@@ -1,5 +1,5 @@
-#ifndef __vtkSaliencyPass_h
-#define __vtkSaliencyPass_h
+#ifndef __vtkRiftRenderPass_h
+#define __vtkRiftRenderPass_h
 
 #include <GL/glew.h>
 #include "vtkImageProcessingPass.h"
@@ -50,11 +50,11 @@ class vtkShader2;
 class vtkFrameBufferObject;
 class vtkTextureObject;
 
-class vtkSaliencyPass : public vtkImageProcessingPass
+class vtkRiftRenderPass : public vtkImageProcessingPass
 {
 public:
-  static vtkSaliencyPass *New();
-  vtkTypeRevisionMacro(vtkSaliencyPass,vtkImageProcessingPass);
+  static vtkRiftRenderPass *New();
+  vtkTypeRevisionMacro(vtkRiftRenderPass,vtkImageProcessingPass);
   void PrintSelf(ostream& os, vtkIndent indent);
 
   //BTX
@@ -74,21 +74,21 @@ public:
 protected:
   // Description:
   // Default constructor. DelegatePass is set to NULL.
-  vtkSaliencyPass();
+  vtkRiftRenderPass();
 
   // Description:
   // Destructor.
-  virtual ~vtkSaliencyPass();
+  virtual ~vtkRiftRenderPass();
 
   bool Supported;
   bool SupportProbed;
 
 private:
-  vtkSaliencyPass(const vtkSaliencyPass&);  // Not implemented.
-  void operator=(const vtkSaliencyPass&);  // Not implemented.
+  vtkRiftRenderPass(const vtkRiftRenderPass&);  // Not implemented.
+  void operator=(const vtkRiftRenderPass&);  // Not implemented.
 
   void createAuxiliaryTexture(TextureInfo *&texCurrent, unsigned char flags, bool resize = false);
-  void showSaliency(const vtkRenderState *s);
+  void showRiftRender(const vtkRenderState *s);
   void init();
 
   TextureInfo* texRender;
