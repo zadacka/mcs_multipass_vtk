@@ -311,7 +311,9 @@ int main(int argc, char *argv[] )
     ren_r->AddActor( coneActor );
     // renderer->SetBackground( 0.1, 0.2, 0.4 );
 
-
+    // Nasty hack:
+    // load the FullBrain2.vtk if a third parameter is present
+    // an elegant way of *only* loading named content is needed...
     if(!use_cone && argc == 3){
 	vtkSmartPointer<vtkPolyDataMapper> coneMapper2 = vtkPolyDataMapper::New();
 	vtkSmartPointer<vtkGenericDataObjectReader> reader2 =
